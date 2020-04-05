@@ -2,11 +2,14 @@ import React from 'react';
 
 
 interface PropsList {
-    members: number[]
+    conId: number,
+    members: number[],
+    callRemote: (user: number) => void
 }
 
-export const UserList = ({members}: PropsList) => (
+export const UserList = ({conId, members, callRemote}: PropsList) => (
     <ul>
-        {members.map(member => <li key={member}>{member}</li>)}
+        {members.map(member => <li onClick={() => callRemote(member)}
+                                   key={member}>{member != conId ? member : "you"}</li>)}
     </ul>
 );

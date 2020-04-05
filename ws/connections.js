@@ -10,6 +10,10 @@ class SocketWrapper {
         this.feedSocket();
     }
 
+    emit = (message, data) => {
+        this.socket.emit(message, data);
+    };
+
     static addMember = (socket) => {
         const current = SocketWrapper.currentId++;
         const co = new SocketWrapper(socket, current);
@@ -23,10 +27,16 @@ class SocketWrapper {
     };
 
     feedSocket = () => {
-        this.socket.on("disconnect", () => {
-            delete SocketWrapper.connections[this.id];
-            SocketWrapper.emitMembers();
-        });
+        this.socket.on("call", ({id, selfId, data}) => {
+            SocketWrapper.connections[id].emit("call", {id, selfId, data});
+        })
+            .on("answer", ({id, selfId, data}) => {
+                SocketWrapper.connections[id].emit("answer", {id, selfId, data});
+            })
+            .on("disconnect", () => {
+                delete SocketWrapper.connections[this.id];
+                SocketWrapper.emitMembers();
+            });
     };
 }
 
