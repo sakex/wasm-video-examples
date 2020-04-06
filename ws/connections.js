@@ -33,6 +33,10 @@ class SocketWrapper {
             .on("answer", ({id, selfId, data}) => {
                 SocketWrapper.connections[id].emit("answer", {id, selfId, data});
             })
+            .on("candidate", ({id, candidate}) => {
+                SocketWrapper.connections[id].emit("candidate", {id, candidate});
+
+            })
             .on("disconnect", () => {
                 delete SocketWrapper.connections[this.id];
                 SocketWrapper.emitMembers();
