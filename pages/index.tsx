@@ -35,7 +35,7 @@ export default class Index extends Component<{}, State> {
             await this.streaming.load_video();
             this.socket.emit("answer", ({id: selfId, selfId: this.state.conId, data: JSON.stringify(answer)}));
         });
-        this.socket.on("candidate", ({id, candidate}) => this.streaming.add_candidate(JSON.parse(candidate)));
+        this.socket.on("candidate", ({id, candidate}) => this.streaming.add_candidate(candidate));
         this.socket.on("answer", async ({id, selfId, data}: CallParams) => {
             const offer = JSON.parse(data);
             await this.streaming.accept_answer(offer).get_offer();
