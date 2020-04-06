@@ -18,42 +18,46 @@ export default class Index extends Component<{}, State> {
     private socket;
     private streaming;
     static Streaming;
+    private candidates = [];
+    private peer;
 
     async componentDidMount() {
-        const wasm = import("@video-stream");
+        const {Streaming, init_panic_hook} = await import("@video-stream");
+        init_panic_hook();
+        Index.Streaming = Streaming;
+        this.streaming = new Index.Streaming(document.querySelector("#firstVideo"));
+        this.peer = this.streaming.get_peer();
+        Reflect.set(window, "peer", this.peer);
         this.socket = io();
+        this.socket.on("candidate", ({id, candidate}) => {this.candidates.push(candidate); console.log(this.candidates)});
         this.socket.on("connectionId", (conId: number) => this.setState({conId}));
         this.socket.on("members", (members: number[]) => this.setState({members}));
         this.socket.on("call", async ({id, selfId, data}: CallParams) => {
             const offer = JSON.parse(data);
-            this.streaming = new Streaming(document.querySelector("#firstVideo"));
-
-            this.socket.on("candidate", ({id, candidate}) => this.streaming.add_ice_candidate(candidate));
-            const answer = await this.streaming.accept_offer(offer).get_offer();
             this.streaming.set_on_ice_candidate((candidate) => {
                 this.socket.emit("candidate", {candidate: candidate, id: selfId});
             });
-            await this.streaming.load_video();
+            const answer = await this.streaming.accept_offer(offer).get_offer();
             this.socket.emit("answer", ({id: selfId, selfId: this.state.conId, data: JSON.stringify(answer)}));
+            this.candidates.forEach(c => this.streaming.add_ice_candidate(c));
+            console.log(this.candidates);
+            await this.streaming.load_video();
         });
         this.socket.on("answer", async ({id, selfId, data}: CallParams) => {
             const offer = JSON.parse(data);
             await this.streaming.accept_answer(offer).get_offer();
+            this.candidates.forEach(c => this.streaming.add_ice_candidate(c));
+            await this.streaming.load_video();
+            console.log(this.candidates);
         });
-        const {Streaming, init_panic_hook} = await wasm;
-        Index.Streaming = Streaming;
-        init_panic_hook();
     }
 
 
     callRemote = async (user: number) => {
-        this.streaming = new Index.Streaming(document.querySelector("#firstVideo"));
         this.streaming.set_on_ice_candidate((candidate) => {
             this.socket.emit("candidate", {candidate: candidate, id: user});
         });
-        this.socket.on("candidate", ({id, candidate}) => this.streaming.add_ice_candidate(candidate));
         const offer = await this.streaming.create_offer().get_offer();
-        await this.streaming.load_video();
         this.socket.emit("call", ({id: user, selfId: this.state.conId, data: JSON.stringify(offer)}));
     };
 
