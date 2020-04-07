@@ -1,6 +1,6 @@
 class Poker {
     static players = new Set();
-    static maxPlayer = 9;
+    static maxPlayer = 3;
 
 
     constructor(socket, id) {
@@ -8,32 +8,29 @@ class Poker {
         this.id = id;
         this.feedSocket();
     }
-
-    //in here change the events
-    /* when serveur receives message what to do
-    *
-    * */
+    
     feedSocket = () => {
 
         this.socket.on("join", () => {
             console.log(" Your id is: ", this.id);
-            if (Poker.players.size <= Poker.maxPlayer) {
-                /* doesn't work...
-                let player;
-                for(player in Poker.players){
+            console.log(" Size is: ", Poker.players.size);
 
-                    if (player === this.id) {
-                        console.log("already in");
-                        break;
+            for (let player of Poker.players) {
+                console.log("player is: ", player);
+                if (player === this.id) {
+                    console.log("already in");
+                } else {
+                    if (Poker.players.size < Poker.maxPlayer) {
+
+                        console.log("welcome to the table");
+                        Poker.players.add(this.id);
+                        console.log(Poker.players);
+                    } else {
+                        console.log("table already full");
                     }
                 }
-                 */
-                console.log("welcome to the table");
-                Poker.players.add(this.id);
-                console.log(Poker.players);
-            } else {
-                console.log("table already full");
             }
+
 
         })
             .on("leave", () => {
