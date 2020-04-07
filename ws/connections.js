@@ -1,3 +1,5 @@
+const Poker = require("./poker");
+
 class SocketWrapper {
     static connections = {};
     static currentId = 0;
@@ -6,7 +8,7 @@ class SocketWrapper {
     constructor(socket, id) {
         this.socket = socket;
         this.id = id;
-
+        this.poker = new Poker(this.socket, this.id);
         this.feedSocket();
     }
 

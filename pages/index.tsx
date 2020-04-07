@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import io from 'socket.io-client';
 import {UserList} from "@components/userList";
+import Poker from "@components/poker.jsx";
 
 interface State {
     conId: number,
@@ -67,6 +68,7 @@ export default class Index extends Component<{}, State> {
     render() {
         return (
             <>
+                {this.state.conId != -1 && <Poker socket={this.socket} />}
                 <div id="firstVideo"/>
                 <UserList callRemote={this.callRemote} {...this.state}/>
             </>
