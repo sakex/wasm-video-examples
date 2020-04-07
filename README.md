@@ -6,6 +6,6 @@
     
 # Run
 
-    npm run serve
+    npm run dev
     
-Visit [http://localhost:8080](http://localhost:8080)
+Visit [http://localhost:3000](http://localhost:3000)
