@@ -29,7 +29,10 @@ export default class Index extends Component<{}, State> {
         this.peer = this.streaming.get_peer();
         Reflect.set(window, "peer", this.peer);
         this.socket = io();
-        this.socket.on("candidate", ({id, candidate}) => {this.candidates.push(candidate); console.log(this.candidates)});
+        this.socket.on("candidate", ({id, candidate}) => {
+            this.candidates.push(candidate);
+            this.streaming.add_ice_candidate(candidate);
+        });
         this.socket.on("connectionId", (conId: number) => this.setState({conId}));
         this.socket.on("members", (members: number[]) => this.setState({members}));
         this.socket.on("call", async ({id, selfId, data}: CallParams) => {
@@ -46,8 +49,8 @@ export default class Index extends Component<{}, State> {
         this.socket.on("answer", async ({id, selfId, data}: CallParams) => {
             const offer = JSON.parse(data);
             await this.streaming.accept_answer(offer).get_offer();
-            this.candidates.forEach(c => this.streaming.add_ice_candidate(c));
             await this.streaming.load_video();
+            this.candidates.forEach(c => this.streaming.add_ice_candidate(c));
             console.log(this.candidates);
         });
     }
