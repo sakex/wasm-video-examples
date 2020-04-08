@@ -2,9 +2,9 @@ class Poker {
     static players = new Set();
     static maxPlayer = 3;
     static startDate = new Date();
-    static turnDate = new Date();
     static actualDate = new Date();
-    static seconds;
+    static turnDate = new Date();
+    static turnSeconds;
     static turnSet = 0;         //player's turn
     static maxTurnSeconds = 15;    //seconds per turn
 
@@ -37,7 +37,7 @@ class Poker {
                 Poker.turnId = Poker.players[Poker.turnSet];
             })
             .on("check", () => {
-                Poker.turnDate = new Date();
+                Poker.changePlayer();
             })
             .on("...", () => {
 
@@ -62,13 +62,14 @@ class Poker {
 
     //seconds in  the player's turn
     turnSeconds = () => {
-        Poker.seconds = setInterval(function () {
+        Poker.turnSeconds = setInterval(function () {
             Poker.actualDate = new Date();
-            Poker.seconds = (Poker.actualDate.getTime() - Poker.turnDate.getTime()) / 1000;
-            //console.log(Poker.seconds);
+            Poker.turnSeconds = (Poker.actualDate.getTime() - Poker.turnDate.getTime()) / 1000;
+            console.log(Poker.turnSeconds);
 
-            if(Poker.seconds < Poker.maxTurnSeconds){
-                //this.changePlayer();
+            if(Poker.turnSeconds > Poker.maxTurnSeconds){
+                console.log("Change of player");
+                Poker.changePlayer();
             }
 
         }, 1000);
@@ -76,18 +77,21 @@ class Poker {
 
     //emit data to the player who has to choose
     emitToActualPlayer = () => {
-        //Poker.players[Poker.turnSet].socket.emit("turnPlayer");
+        console.log("time remaining: ", Poker.maxTurnSeconds - Poker.turnSeconds)
+        //
     };
 
-    changePlayer = () => {
+    static changePlayer = () => {
         if (Poker.turnSet < Poker.players.size) {
             Poker.turnSet += 1;
         } else {
             Poker.turnSet = 0;
         }
+        Poker.turnDate = new Date();
+        //CHANGE HERE
+        //Poker.players.values[Poker.turnSet].socket.emit("turnPlayer", Poker.turnSeconds);
 
     };
-
 }
 
 //Poker.players.forEach(player => console.log(player.id));

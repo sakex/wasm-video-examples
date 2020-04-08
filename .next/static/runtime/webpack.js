@@ -113,7 +113,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "7a7e57dfcc19edc01b18";
+/******/ 	var hotCurrentHash = "f9ea804fc85aa773d65b";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -769,6 +769,194 @@
 /******/ 		return __webpack_require__.p + "static/chunks/" + ({}[chunkId]||chunkId) + ".js"
 /******/ 	}
 /******/
+/******/ 	// object to store loaded and loading wasm modules
+/******/ 	var installedWasmModules = {};
+/******/
+/******/ 	function promiseResolve() { return Promise.resolve(); }
+/******/
+/******/ 	var wasmImportObjects = {
+/******/ 		"../asm-video-chat/pkg/video_chat_bg.wasm": function() {
+/******/ 			return {
+/******/ 				"./video_chat.js": {
+/******/ 					"__wbindgen_object_drop_ref": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_object_drop_ref"](p0i32);
+/******/ 					},
+/******/ 					"__wbindgen_object_clone_ref": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_object_clone_ref"](p0i32);
+/******/ 					},
+/******/ 					"__wbindgen_string_new": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_string_new"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbindgen_is_function": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_is_function"](p0i32);
+/******/ 					},
+/******/ 					"__wbindgen_cb_drop": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_cb_drop"](p0i32);
+/******/ 					},
+/******/ 					"__wbindgen_json_parse": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_json_parse"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_instanceof_Window_a633dbe0900c728a": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_instanceof_Window_a633dbe0900c728a"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_document_07444f1bbea314bb": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_document_07444f1bbea314bb"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_navigator_849182c6ea6e2f9a": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_navigator_849182c6ea6e2f9a"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_createElement_5a267cb074dc073b": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_createElement_5a267cb074dc073b"](p0i32,p1i32,p2i32);
+/******/ 					},
+/******/ 					"__wbg_width_2fcac41581e9c8b8": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_width_2fcac41581e9c8b8"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_height_ea955a599358849b": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_height_ea955a599358849b"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_getUserMedia_8baa33fb0626c558": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_getUserMedia_8baa33fb0626c558"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_instanceof_RtcIceCandidate_2d0eddf366a8f629": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_instanceof_RtcIceCandidate_2d0eddf366a8f629"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_mediaDevices_eb0ae72eca099c17": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_mediaDevices_eb0ae72eca099c17"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_appendChild_c1802f48577b21f6": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_appendChild_c1802f48577b21f6"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_getTracks_e251a1abdd5ca5dd": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_getTracks_e251a1abdd5ca5dd"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_log_c180b836187d3c94": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_log_c180b836187d3c94"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_onicecandidate_6984c09711939c96": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_onicecandidate_6984c09711939c96"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_ontrack_2c61053781f54f08": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_ontrack_2c61053781f54f08"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_newwithconfiguration_9d68c3ece2b922a0": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_newwithconfiguration_9d68c3ece2b922a0"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_addIceCandidate_c2026df139714c66": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_addIceCandidate_c2026df139714c66"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_addTrack_0a3814fe228148c3": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_addTrack_0a3814fe228148c3"](p0i32,p1i32,p2i32);
+/******/ 					},
+/******/ 					"__wbg_createAnswer_649105dd54c33569": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_createAnswer_649105dd54c33569"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_createOffer_1c8b8954fdeac7c7": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_createOffer_1c8b8954fdeac7c7"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_setLocalDescription_9c325a8398b42d82": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_setLocalDescription_9c325a8398b42d82"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_setRemoteDescription_c4d6cf6e6778af17": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_setRemoteDescription_c4d6cf6e6778af17"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_srcObject_4ad75e5ae2e998f2": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_srcObject_4ad75e5ae2e998f2"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_srcObject_912f785e056a12ea": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_srcObject_912f785e056a12ea"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_autoplay_1f04bfad6ad4e631": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_autoplay_1f04bfad6ad4e631"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_muted_6dae64a55db68c00": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_muted_6dae64a55db68c00"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_get_82c22aeeb618210d": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_get_82c22aeeb618210d"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_length_1f2b77c3caba45bb": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_length_1f2b77c3caba45bb"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_get_8fd175832d82a656": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_get_8fd175832d82a656"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_call_804d3ad7e8acd4d5": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_call_804d3ad7e8acd4d5"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_new_ec28d6ba821801cb": function() {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_new_ec28d6ba821801cb"]();
+/******/ 					},
+/******/ 					"__wbg_push_ffaa2df7422d3b4c": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_push_ffaa2df7422d3b4c"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_newnoargs_ebdc90c3d1e4e55d": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_newnoargs_ebdc90c3d1e4e55d"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_call_1ad0eb4a7ab279eb": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_call_1ad0eb4a7ab279eb"](p0i32,p1i32,p2i32);
+/******/ 					},
+/******/ 					"__wbg_new_937729a89a522fb5": function() {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_new_937729a89a522fb5"]();
+/******/ 					},
+/******/ 					"__wbg_new_1bf1b0dbcaa9ee96": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_new_1bf1b0dbcaa9ee96"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_resolve_3e5970e9c931a3c2": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_resolve_3e5970e9c931a3c2"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_then_d797310661d9e275": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_then_d797310661d9e275"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_then_e37e0b9ef0995585": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_then_e37e0b9ef0995585"](p0i32,p1i32,p2i32);
+/******/ 					},
+/******/ 					"__wbg_globalThis_48a5e9494e623f26": function() {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_globalThis_48a5e9494e623f26"]();
+/******/ 					},
+/******/ 					"__wbg_self_25067cb019cade42": function() {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_self_25067cb019cade42"]();
+/******/ 					},
+/******/ 					"__wbg_window_9e80200b35aa30f8": function() {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_window_9e80200b35aa30f8"]();
+/******/ 					},
+/******/ 					"__wbg_global_7583a634265a91fc": function() {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_global_7583a634265a91fc"]();
+/******/ 					},
+/******/ 					"__wbindgen_is_undefined": function(p0i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_is_undefined"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_set_5cbed684ac2b1ce9": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_set_5cbed684ac2b1ce9"](p0i32,p1i32,p2i32);
+/******/ 					},
+/******/ 					"__wbg_new_59cb74e423758ede": function() {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_new_59cb74e423758ede"]();
+/******/ 					},
+/******/ 					"__wbg_stack_558ba5917b466edd": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_stack_558ba5917b466edd"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_error_4bb6c2a97407129a": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbg_error_4bb6c2a97407129a"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbindgen_string_get": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_string_get"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbindgen_debug_string": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_debug_string"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbindgen_throw": function(p0i32,p1i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_throw"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbindgen_closure_wrapper130": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_closure_wrapper130"](p0i32,p1i32,p2i32);
+/******/ 					},
+/******/ 					"__wbindgen_closure_wrapper151": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../asm-video-chat/pkg/video_chat.js"].exports["__wbindgen_closure_wrapper151"](p0i32,p1i32,p2i32);
+/******/ 					}
+/******/ 				}
+/******/ 			};
+/******/ 		},
+/******/ 	};
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
 /******/
@@ -861,6 +1049,38 @@
 /******/ 				document.head.appendChild(script);
 /******/ 			}
 /******/ 		}
+/******/
+/******/ 		// Fetch + compile chunk loading for webassembly
+/******/
+/******/ 		var wasmModules = {"1":["../asm-video-chat/pkg/video_chat_bg.wasm"]}[chunkId] || [];
+/******/
+/******/ 		wasmModules.forEach(function(wasmModuleId) {
+/******/ 			var installedWasmModuleData = installedWasmModules[wasmModuleId];
+/******/
+/******/ 			// a Promise means "currently loading" or "already loaded".
+/******/ 			if(installedWasmModuleData)
+/******/ 				promises.push(installedWasmModuleData);
+/******/ 			else {
+/******/ 				var importObject = wasmImportObjects[wasmModuleId]();
+/******/ 				var req = fetch(__webpack_require__.p + "static/wasm/" + {"../asm-video-chat/pkg/video_chat_bg.wasm":"9b6990eca760b720acfa"}[wasmModuleId] + ".wasm");
+/******/ 				var promise;
+/******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
+/******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
+/******/ 						return WebAssembly.instantiate(items[0], items[1]);
+/******/ 					});
+/******/ 				} else if(typeof WebAssembly.instantiateStreaming === 'function') {
+/******/ 					promise = WebAssembly.instantiateStreaming(req, importObject);
+/******/ 				} else {
+/******/ 					var bytesPromise = req.then(function(x) { return x.arrayBuffer(); });
+/******/ 					promise = bytesPromise.then(function(bytes) {
+/******/ 						return WebAssembly.instantiate(bytes, importObject);
+/******/ 					});
+/******/ 				}
+/******/ 				promises.push(installedWasmModules[wasmModuleId] = promise.then(function(res) {
+/******/ 					return __webpack_require__.w[wasmModuleId] = (res.instance || res).exports;
+/******/ 				}));
+/******/ 			}
+/******/ 		});
 /******/ 		return Promise.all(promises);
 /******/ 	};
 /******/
@@ -918,6 +1138,9 @@
 /******/
 /******/ 	// on error function for async loading
 /******/ 	__webpack_require__.oe = function(err) { console.error(err); throw err; };
+/******/
+/******/ 	// object with all WebAssembly.instance exports
+/******/ 	__webpack_require__.w = {};
 /******/
 /******/ 	// __webpack_hash__
 /******/ 	__webpack_require__.h = function() { return hotCurrentHash; };
