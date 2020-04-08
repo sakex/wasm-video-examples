@@ -58,7 +58,15 @@ var _default = /*#__PURE__*/function (_Component) {
         onClick: function onClick() {
           return _this2.socket.emit("leave");
         }
-      }, "leave"));
+      }, "leave"), __jsx("button", {
+        onClick: function onClick() {
+          return _this2.socket.emit("start");
+        }
+      }, "start"), __jsx("button", {
+        onClick: function onClick() {
+          return _this2.socket.emit("check");
+        }
+      }, "Check"));
     }
   }]);
 

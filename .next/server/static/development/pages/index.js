@@ -389,7 +389,11 @@ var __jsx = react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement;
       onClick: () => this.socket.emit("join")
     }, "join"), __jsx("button", {
       onClick: () => this.socket.emit("leave")
-    }, "leave"));
+    }, "leave"), __jsx("button", {
+      onClick: () => this.socket.emit("start")
+    }, "start"), __jsx("button", {
+      onClick: () => this.socket.emit("check")
+    }, "Check"));
   }
 
 });
