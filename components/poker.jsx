@@ -13,6 +13,9 @@ export default class extends Component {
                 <button onClick={() => this.socket.emit("leave")}>leave</button>
                 <button onClick={() => this.socket.emit("start")}>start</button>
                 <button onClick={() => this.socket.emit("check")}>Check</button>
+                {/*
+                <div this.socket.on("turnPlayer");>Your data is: </div>
+                */}
             </>
         );
     }

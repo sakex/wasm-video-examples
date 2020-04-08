@@ -6,37 +6,5 @@
       "file": "static/chunks/0.js",
       "publicPath": "static/chunks/0.js"
     }
-  ],
-  "@video-stream": [
-    {
-      "id": "../asm-video-chat/pkg/video_chat.js",
-      "name": "../asm-video-chat/pkg/video_chat.js",
-      "file": "static/chunks/1.js",
-      "publicPath": "static/chunks/1.js"
-    },
-    {
-      "id": "../asm-video-chat/pkg/video_chat_bg.wasm",
-      "name": "../asm-video-chat/pkg/video_chat_bg.wasm",
-      "file": "static/chunks/1.js",
-      "publicPath": "static/chunks/1.js"
-    },
-    {
-      "id": "./node_modules/util/node_modules/inherits/inherits_browser.js",
-      "name": "./node_modules/util/node_modules/inherits/inherits_browser.js",
-      "file": "static/chunks/1.js",
-      "publicPath": "static/chunks/1.js"
-    },
-    {
-      "id": "./node_modules/util/support/isBufferBrowser.js",
-      "name": "./node_modules/util/support/isBufferBrowser.js",
-      "file": "static/chunks/1.js",
-      "publicPath": "static/chunks/1.js"
-    },
-    {
-      "id": "./node_modules/util/util.js",
-      "name": "./node_modules/util/util.js",
-      "file": "static/chunks/1.js",
-      "publicPath": "static/chunks/1.js"
-    }
   ]
 }
