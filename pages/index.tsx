@@ -40,8 +40,11 @@ export default class Index extends Component<{}, State> {
         });
 
         this.socket.on("callMembers", async (members: string[]) => {
-            members.forEach(this.callRemote);
-        })
+            const ids = this.streaming.get_ids();
+            members.forEach((id: string) => {
+                if (!ids.has(id)) this.callRemote(id);
+            });
+        });
 
         this.socket.on("error", (error: string) => {
             alert(`An error occured: ${error}`);
@@ -56,8 +59,7 @@ export default class Index extends Component<{}, State> {
         this.socket.on("call", async ({senderId, data}: CallParams) => {
             try {
                 this.streaming.create_connection(senderId);
-            }
-            catch(err){
+            } catch (err) {
                 console.log("already connected");
             }
             const offer = JSON.parse(data);
@@ -68,7 +70,7 @@ export default class Index extends Component<{}, State> {
             const answer = await this.streaming.accept_offer(senderId, offer).get_offer();
             this.socket.emit("answer", ({id: senderId, senderId: this.state.conId, data: JSON.stringify(answer)}));
             const ids = this.streaming.get_ids();
-            if(ids.length > 1){
+            if (ids.length > 1) {
                 this.socket.emit("callMembers", ({id: senderId, members: this.streaming.get_ids()}));
             }
         });
@@ -93,8 +95,11 @@ export default class Index extends Component<{}, State> {
             });
             const offer = await this.streaming.create_offer(user).get_offer();
             this.socket.emit("call", ({id: user, senderId: this.state.conId, data: JSON.stringify(offer)}));
-        }
-        catch(err){
+            const ids = this.streaming.get_ids();
+            if (ids.length > 1) {
+                this.socket.emit("callMembers", ({id: user, members: this.streaming.get_ids()}));
+            }
+        } catch (err) {
             console.log(err);
         }
     };
@@ -104,7 +109,8 @@ export default class Index extends Component<{}, State> {
     };
 
     keyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if(e.which === 13) this.sendName().then(() => {});
+        if (e.which === 13) this.sendName().then(() => {
+        });
     };
 
     render() {
@@ -117,7 +123,8 @@ export default class Index extends Component<{}, State> {
                     <>
                         <div>Please enter your name:
                             <p>
-                                <input type={"text"} value={this.state.inputName} onKeyPress={this.keyPress} onChange={this.valueChange}/>
+                                <input type={"text"} value={this.state.inputName} onKeyPress={this.keyPress}
+                                       onChange={this.valueChange}/>
                                 <button onClick={this.sendName}>Send name</button>
                             </p>
                         </div>
