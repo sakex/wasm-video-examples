@@ -1,5 +1,6 @@
 class Poker {
     static players = new Set();
+    //chaque joueur a des cartes, tokens, bet, proba
     static maxPlayer = 3;
     static startDate = new Date();
     static actualDate = new Date();
@@ -13,7 +14,7 @@ class Poker {
         this.socket = socket;
         this.id = id;
         this.feedSocket();
-        this.turnSeconds();
+        this.turnTime();
         this.emitToActualPlayer();
 
     }
@@ -39,13 +40,13 @@ class Poker {
             .on("check", () => {
                 Poker.changePlayer();
             })
-            .on("...", () => {
+            .on("pass", () => {
 
             })
-            .on("...", () => {
+            .on("follow", () => {
 
             })
-            .on("...", () => {
+            .on("raise", () => {
 
             })
             .on("...", () => {
@@ -61,7 +62,7 @@ class Poker {
     };
 
     //seconds in  the player's turn
-    turnSeconds = () => {
+    turnTime = () => {
         Poker.turnSeconds = setInterval(function () {
             Poker.actualDate = new Date();
             Poker.turnSeconds = (Poker.actualDate.getTime() - Poker.turnDate.getTime()) / 1000;
@@ -78,7 +79,7 @@ class Poker {
     //emit data to the player who has to choose
     emitToActualPlayer = () => {
         console.log("time remaining: ", Poker.maxTurnSeconds - Poker.turnSeconds)
-        //
+        //Poker.players.values[Poker.turnSet].socket.emit("turnPlayer", Poker.turnSeconds);
     };
 
     static changePlayer = () => {
@@ -95,6 +96,19 @@ class Poker {
 }
 
 //Poker.players.forEach(player => console.log(player.id));
+
+class Cards{
+    // 1 is As, .., 11 is Jack, 12 is Queen, 13 is King
+    let number = new Set(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13);
+    //0 is Spades, 1 is Heart, 2 is Diamond, 3 is Clubs
+    let color = Set(0, 1, 2, 3);
+}
+
+class Player{
+    let tokens = 1000;
+    let bet = 0;
+    let cards = [Cards, Cards];
+}
 
 module
     .exports = Poker;
