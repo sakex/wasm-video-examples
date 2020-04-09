@@ -2,9 +2,9 @@ import React from 'react';
 
 
 interface PropsList {
-    conId: number,
-    members: number[],
-    callRemote: (user: number) => void
+    conId: string,
+    members: string[],
+    callRemote: (user: string) => void
 }
 
 export const UserList = ({conId, members, callRemote}: PropsList) => (

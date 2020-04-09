@@ -16,9 +16,8 @@ class SocketWrapper {
 
     static addMember = (socket) => {
         const current = SocketWrapper.currentId++;
-        const co = new SocketWrapper(socket, current);
-        SocketWrapper.connections[current] = co;
-        socket.emit("connectionId", current);
+        SocketWrapper.connections[current.toString()] = new SocketWrapper(socket, current);
+        socket.emit("connectionId", current.toString());
         SocketWrapper.emitMembers();
     };
 
@@ -27,15 +26,14 @@ class SocketWrapper {
     };
 
     feedSocket = () => {
-        this.socket.on("call", ({id, selfId, data}) => {
-            SocketWrapper.connections[id].emit("call", {id, selfId, data});
+        this.socket.on("call", ({id, senderId, data}) => {
+            SocketWrapper.connections[id].emit("call", {id, senderId, data});
         })
-            .on("answer", ({id, selfId, data}) => {
-                SocketWrapper.connections[id].emit("answer", {id, selfId, data});
+            .on("answer", ({id, senderId, data}) => {
+                SocketWrapper.connections[id].emit("answer", {id, senderId, data});
             })
-            .on("candidate", ({id, candidate}) => {
-                SocketWrapper.connections[id].emit("candidate", {id, candidate});
-
+            .on("candidate", ({id, senderId, candidate}) => {
+                SocketWrapper.connections[id].emit("candidate", {id, senderId, candidate});
             })
             .on("disconnect", () => {
                 delete SocketWrapper.connections[this.id];

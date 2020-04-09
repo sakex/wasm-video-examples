@@ -3,65 +3,58 @@ import io from 'socket.io-client';
 import {UserList} from "@components/userList";
 
 interface State {
-    conId: number,
-    members: number[]
+    conId: string,
+    members: string[]
 }
 
 interface CallParams {
-    id: number,
-    selfId: number,
+    id: string,
+    senderId: string,
     data: string
 }
 
 export default class Index extends Component<{}, State> {
-    public state: State = {conId: -1, members: []};
+    public state: State = {conId: null, members: []};
     private socket;
     private streaming;
     static Streaming;
-    private candidates = [];
-    private peer;
 
     async componentDidMount() {
         const {Streaming, init_panic_hook} = await import("@video-stream");
         init_panic_hook();
         Index.Streaming = Streaming;
         this.streaming = new Index.Streaming(document.querySelector("#firstVideo"));
-        this.peer = this.streaming.get_peer();
-        Reflect.set(window, "peer", this.peer);
+        await this.streaming.load_video();
         this.socket = io();
-        this.socket.on("candidate", ({id, candidate}) => {
-            this.candidates.push(candidate);
-            this.streaming.add_ice_candidate(candidate);
+        this.socket.on("candidate", ({senderId, candidate}) => {
+            this.streaming.add_ice_candidate(senderId, candidate);
         });
-        this.socket.on("connectionId", (conId: number) => this.setState({conId}));
-        this.socket.on("members", (members: number[]) => this.setState({members}));
-        this.socket.on("call", async ({id, selfId, data}: CallParams) => {
+        this.socket.on("connectionId", (conId: string) => this.setState({conId: conId.toString()}));
+        this.socket.on("members", (members: string[]) => this.setState({members}));
+        this.socket.on("call", async ({senderId, data}: CallParams) => {
+            this.streaming.create_connection(senderId);
             const offer = JSON.parse(data);
-            this.streaming.set_on_ice_candidate((candidate) => {
-                this.socket.emit("candidate", {candidate: candidate, id: selfId});
+            this.streaming.set_on_ice_candidate(senderId, (candidate) => {
+                this.socket.emit("candidate", {candidate, senderId: this.state.conId, id: senderId});
             });
-            const answer = await this.streaming.accept_offer(offer).get_offer();
-            this.socket.emit("answer", ({id: selfId, selfId: this.state.conId, data: JSON.stringify(answer)}));
-            this.candidates.forEach(c => this.streaming.add_ice_candidate(c));
-            console.log(this.candidates);
             await this.streaming.load_video();
+            const answer = await this.streaming.accept_offer(senderId, offer).get_offer();
+            this.socket.emit("answer", ({id: senderId, senderId: this.state.conId, data: JSON.stringify(answer)}));
         });
-        this.socket.on("answer", async ({id, selfId, data}: CallParams) => {
+        this.socket.on("answer", async ({senderId, data}: CallParams) => {
             const offer = JSON.parse(data);
-            await this.streaming.accept_answer(offer).get_offer();
-            await this.streaming.load_video();
-            this.candidates.forEach(c => this.streaming.add_ice_candidate(c));
-            console.log(this.candidates);
+            await this.streaming.accept_answer(senderId, offer).get_offer();
         });
     }
 
 
-    callRemote = async (user: number) => {
-        this.streaming.set_on_ice_candidate((candidate) => {
-            this.socket.emit("candidate", {candidate: candidate, id: user});
+    callRemote = async (user: string) => {
+        this.streaming.create_connection(user);
+        this.streaming.set_on_ice_candidate(user, (candidate) => {
+            this.socket.emit("candidate", {candidate, senderId: this.state.conId, id: user});
         });
-        const offer = await this.streaming.create_offer().get_offer();
-        this.socket.emit("call", ({id: user, selfId: this.state.conId, data: JSON.stringify(offer)}));
+        const offer = await this.streaming.create_offer(user).get_offer();
+        this.socket.emit("call", ({id: user, senderId: this.state.conId, data: JSON.stringify(offer)}));
     };
 
     render() {
