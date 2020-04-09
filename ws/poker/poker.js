@@ -1,14 +1,10 @@
+const Game = require("./game");
+
 class Poker {
     static players = new Set();
     //chaque joueur a des cartes, tokens, bet, proba
     static maxPlayer = 3;
-    static startDate = new Date();
-    static actualDate = new Date();
-    static turnDate = new Date();
-    static turnSeconds;
-    static turnSet = 0;         //player's turn
-    static maxTurnSeconds = 15;    //seconds per turn
-
+    static games = [];
 
     constructor(socket, id) {
         this.socket = socket;
@@ -33,9 +29,10 @@ class Poker {
                 Poker.players.delete(this);
             })
             .on("start", () => {
-                Poker.startDate = new Date();
-                //start with the first player in the Set
-                Poker.turnId = Poker.players[Poker.turnSet];
+                const playerArr = [...Poker.players];
+                const game = new Game(playerArr);
+                Poker.games.push(game);
+                game.start();
             })
             .on("check", () => {
                 Poker.changePlayer();
@@ -95,20 +92,5 @@ class Poker {
     };
 }
 
-//Poker.players.forEach(player => console.log(player.id));
 
-class Cards{
-    // 1 is As, .., 11 is Jack, 12 is Queen, 13 is King
-    let number = new Set(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13);
-    //0 is Spades, 1 is Heart, 2 is Diamond, 3 is Clubs
-    let color = Set(0, 1, 2, 3);
-}
-
-class Player{
-    let tokens = 1000;
-    let bet = 0;
-    let cards = [Cards, Cards];
-}
-
-module
-    .exports = Poker;
+module.exports = Poker;

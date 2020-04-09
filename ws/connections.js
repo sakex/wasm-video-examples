@@ -1,4 +1,4 @@
-const Poker = require("./poker");
+const Poker = require("./poker/poker");
 
 class SocketWrapper {
     static connections = {};
