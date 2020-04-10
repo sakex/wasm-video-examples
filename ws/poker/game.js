@@ -18,7 +18,9 @@ const shuffleArray = (arr) => {
 class Game {
     static awaitTimer = (timer) => {
         return new Promise((resolve) => {
-            setTimeout(() => {resolve(timer)}, timer);
+            setTimeout(() => {
+                resolve(timer)
+            }, timer);
         })
     }
 
@@ -34,9 +36,15 @@ class Game {
         };
     }
 
+    //feedInteractions = () => this.players.forEach(player => new Interactions(this, player));
+
     start = async () => {
-        while(this.players.length > 0) {
+        console.log("start");
+        //this.feedInteractions()
+
+        while (this.players.length > 0) {
             await this.playRound();
+            return;
         }
     }
 
@@ -74,8 +82,10 @@ class Game {
             arr.push(this.deck.pop().serialize())
         });
         this.players.forEach((player, index) => {
-           player.socket.emit("cards", toSend[index])
+            player.socket.emit("cards", toSend[index])
         });
         await Game.awaitTimer(10000);
     };
 }
+
+module.exports = Game;

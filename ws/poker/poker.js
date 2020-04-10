@@ -1,6 +1,8 @@
 const Game = require("./game");
 
+/*
 class Poker {
+
     static players = new Set();
     //chaque joueur a des cartes, tokens, bet, proba
     static maxPlayer = 3;
@@ -90,7 +92,10 @@ class Poker {
         //Poker.players.values[Poker.turnSet].socket.emit("turnPlayer", Poker.turnSeconds);
 
     };
+
 }
 
 
 module.exports = Poker;
+
+ */
