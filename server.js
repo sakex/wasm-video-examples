@@ -15,7 +15,7 @@ SocketWrapper.IO = io;
 io.on("connection", client => {
     client.on("enterId", inputName => {
         SocketWrapper.addMember(inputName, client);
-    })
+    });
 });
 
 nextApp.prepare().then(() => {

@@ -6,7 +6,6 @@ class SocketWrapper {
     constructor(socket, id) {
         this.socket = socket;
         this.id = id;
-
         this.feedSocket();
     }
 
@@ -30,41 +29,36 @@ class SocketWrapper {
         this.socket.on("call", ({id, senderId, data}) => {
             try {
                 SocketWrapper.connections[id].emit("call", {id, senderId, data});
-            }
-            catch(err){
-                this.socket.emit("error", `${id} not connected`);
+            } catch (err) {
+                this.socket.emit("err", `${id} not connected`);
             }
         })
             .on("answer", ({id, senderId, data}) => {
                 try {
                     SocketWrapper.connections[id].emit("answer", {id, senderId, data});
-                }
-                catch(err){
-                    this.socket.emit("error", `${id} not connected`);
+                } catch (err) {
+                    this.socket.emit("err", `${id} not connected`);
                 }
             })
             .on("callMembers", ({id, members}) => {
                 try {
                     SocketWrapper.connections[id].emit("callMembers", members);
-                }
-                catch(err){
-                    this.socket.emit("error", `${id} not connected`);
+                } catch (err) {
+                    this.socket.emit("err", `${id} not connected`);
                 }
             })
             .on("candidate", ({id, senderId, candidate}) => {
                 try {
                     SocketWrapper.connections[id].emit("candidate", {id, senderId, candidate});
-                }
-                catch(err){
-                    this.socket.emit("error", `${id} not connected`);
+                } catch (err) {
+                    this.socket.emit("err", `${id} not connected`);
                 }
             })
             .on("disconnect", () => {
-                try{
+                try {
                     delete SocketWrapper.connections[this.id];
                     SocketWrapper.emitMembers();
-                }
-                catch(err){
+                } catch (err) {
 
                 }
             });

@@ -1,4 +1,4 @@
-import React, {ChangeEvent, Component} from 'react';
+import React, {Component} from 'react';
 import {UserList} from "@components/userList";
 import SocketIOClient from "socket.io-client";
 
@@ -46,8 +46,8 @@ export default class Index extends Component<{}, State> {
             });
         });
 
-        this.socket.on("error", (error: string) => {
-            alert(`An error occured: ${error}`);
+        this.socket.on("err", (error: string) => {
+            console.error(`An error occured: ${error}`);
         });
 
         this.socket.on("members", (members: string[]) => this.setState({members}));
@@ -59,19 +59,19 @@ export default class Index extends Component<{}, State> {
         this.socket.on("call", async ({senderId, data}: CallParams) => {
             try {
                 this.streaming.create_connection(senderId);
+                const offer = JSON.parse(data);
+                this.streaming.set_on_ice_candidate(senderId, (candidate) => {
+                    this.socket.emit("candidate", {candidate, senderId: this.state.conId, id: senderId});
+                });
+                await this.streaming.load_video();
+                const answer = await this.streaming.accept_offer(senderId, offer).get_offer();
+                this.socket.emit("answer", ({id: senderId, senderId: this.state.conId, data: JSON.stringify(answer)}));
+                const ids = this.streaming.get_ids();
+                if (ids.length > 1) {
+                    this.socket.emit("callMembers", ({id: senderId, members: [...this.streaming.get_ids()]}));
+                }
             } catch (err) {
-                console.log("already connected");
-            }
-            const offer = JSON.parse(data);
-            this.streaming.set_on_ice_candidate(senderId, (candidate) => {
-                this.socket.emit("candidate", {candidate, senderId: this.state.conId, id: senderId});
-            });
-            await this.streaming.load_video();
-            const answer = await this.streaming.accept_offer(senderId, offer).get_offer();
-            this.socket.emit("answer", ({id: senderId, senderId: this.state.conId, data: JSON.stringify(answer)}));
-            const ids = this.streaming.get_ids();
-            if (ids.length > 1) {
-                this.socket.emit("callMembers", ({id: senderId, members: this.streaming.get_ids()}));
+                console.error("already connected");
             }
         });
 
@@ -97,7 +97,7 @@ export default class Index extends Component<{}, State> {
             this.socket.emit("call", ({id: user, senderId: this.state.conId, data: JSON.stringify(offer)}));
             const ids = this.streaming.get_ids();
             if (ids.length > 1) {
-                this.socket.emit("callMembers", ({id: user, members: this.streaming.get_ids()}));
+                this.socket.emit("callMembers", ({id: user, members: [...this.streaming.get_ids()]}));
             }
         } catch (err) {
             console.log(err);

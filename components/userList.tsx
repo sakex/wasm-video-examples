@@ -28,7 +28,7 @@ export const UserList = ({conId, members, callRemote}: PropsList) => (
     <div>
         {members.map(member => <p key={member}>
             {member != conId ? <Button onClick={() => callRemote(member)}
-                                       >{`Call ${member.split("_")[0]}`}
+            >{`Call ${member.split("_")[0]}`}
             </Button> : <span>{`you (${conId.split("_")[0]})`}</span>}
         </p>)}
     </div>
