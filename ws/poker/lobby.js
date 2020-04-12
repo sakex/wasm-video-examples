@@ -27,30 +27,13 @@ class Lobby {
             .on("leave", () => {
                 Lobby.players.delete(this);
             })
-
-
             .on("start", () => {
                 //console.log(Lobby.players, "polo");
                 const playerArr = [...Lobby.players];
-                const game = new Game(playerArr);
+                const game = new Game(playerArr, socket, id);
                 Lobby.game.push(game);
                 game.start();
                 //throw new Error("message")
-            })
-            .on("check", () => {
-                //Poker.changePlayer();
-            })
-            .on("pass", () => {
-
-            })
-            .on("follow", () => {
-
-            })
-            .on("raise", () => {
-
-            })
-            .on("...", () => {
-
             });
 
     };

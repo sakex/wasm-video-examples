@@ -48,16 +48,15 @@ var _default = /*#__PURE__*/function (_Component) {
 
     Object(_babel_runtime_helpers_esm_defineProperty__WEBPACK_IMPORTED_MODULE_6__["default"])(Object(_babel_runtime_helpers_esm_assertThisInitialized__WEBPACK_IMPORTED_MODULE_2__["default"])(_this), "feedSocket", function () {
       _this.socket.on("turnPlayer", function () {}).on("cards", function (cards) {
-        return _this.setState({
-          currentCards: cards
-        });
+        return _this.setState(_this.currentCards = cards);
+      }).on("state", function (state) {
+        return _this.setState(_this.currentState = state);
       });
     });
 
     _this.socket = props.socket;
-    _this.state = {
-      currentCards: []
-    };
+    _this.currentCards = [];
+    _this.currentState = null;
 
     _this.feedSocket();
 
@@ -87,6 +86,10 @@ var _default = /*#__PURE__*/function (_Component) {
         }
       }, "Check"), __jsx("button", {
         onClick: function onClick() {
+          return _this2.socket.emit("checkOrPass");
+        }
+      }, "Check or Pass"), __jsx("button", {
+        onClick: function onClick() {
           return _this2.socket.emit("pass");
         }
       }, "Pass"), __jsx("button", {
@@ -97,7 +100,7 @@ var _default = /*#__PURE__*/function (_Component) {
         onClick: function onClick() {
           return _this2.socket.emit("raise");
         }
-      }, "Raise"), __jsx("div", null, this.state.currentCards));
+      }, "Raise"), __jsx("div", null, this.currentCards), __jsx("div", null, this.currentState));
     }
   }]);
 
