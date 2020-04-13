@@ -22,7 +22,7 @@ export default class extends Component {
 
         this.socket.on("turnPlayer", () => {
         })
-            .on("cards", (cards) => this.setState[cards])
+            .on("cards", (cards) => this.setState({ cards }))
             .on("state", (state) => this.setState(state))
     };
 
