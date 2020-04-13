@@ -7,9 +7,13 @@ export default class extends Component {
     constructor(props) {
         super(props);
         this.socket = props.socket;
-        this.currentCards = [];
-        this.currentState = null;
-
+        this.state = {
+            cards:[],
+            currentPlayer:-1,
+            dealer:-1,
+            highestBet:-1,
+            firstHighestPlayer:-1
+        };
         this.feedSocket();
     }
 
@@ -18,8 +22,8 @@ export default class extends Component {
 
         this.socket.on("turnPlayer", () => {
         })
-            .on("cards", (cards) => this.setState(this.currentCards = cards))
-            .on("state", (state) => this.setState(this.currentState = state))
+            .on("cards", (cards) => this.setState[cards])
+            .on("state", (state) => this.setState(state))
     };
 
 
@@ -35,12 +39,11 @@ export default class extends Component {
                 <button onClick={() => this.socket.emit("pass")}>Pass</button>
                 <button onClick={() => this.socket.emit("follow")}>Follow</button>
                 <button onClick={() => this.socket.emit("raise")}>Raise</button>
-                <div>{this.currentCards}</div>
-                <div>{this.currentState}</div>
-
-                {/*
-
-                */}
+                <div>Cards: {this.state.cards}</div>
+                <div>Current player: {this.state.currentPlayer}</div>
+                <div>Dealer: {this.state.dealer}</div>
+                <div>Highest bet: {this.state.highestBet}</div>
+                <div>Biggest bet from player: {this.state.firstHighestPlayer}</div>
             </>
         );
     }

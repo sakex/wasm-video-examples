@@ -25,49 +25,61 @@ class Game {
         })
     }
 
-    constructor(players, socket, id) {
-        this.socket = socket;
-        this.id = id;
+    constructor(players) {
         this.players = players;
         this.deck = null;
         this.bets = new Array(players.length).fill(0);
-        this.currentInteractions = [];
 
         const firstDealer = Math.round(Math.random() * this.players.length);
 
         this.state = {
             currentPlayer: (firstDealer + 2) % this.players.length,
             dealer: firstDealer,
-            bets: this.bets,
-            currentInteraction: this.currentInteractions[(firstDealer + 2) % this.players.length]
+            highestBet: this.bets.max,
+            firstHighestPlayer: firstDealer + 2 % this.players.length,
         };
     }
 
-    feedInteractions = () => this.players.forEach(player => {
-        const interaction = new Interactions(this, player, this.socket, this.id, this.state);
-        this.currentInteractions.push(interaction);
-    });
+    feedInteractions = () => this.players.forEach(player => new Interactions(this, player));
 
     emitState = () => {
-        this.players.forEach(player => player.socket.emit("state", this.state));
+        //console.log(this.state)
+        this.players.forEach((player) => player.socket.emit("state", this.state));
     };
 
     start = async () => {
         //console.log("start");
         this.feedInteractions()
-
-
         while (this.players.length > 0) {
             await this.playRound();
             return;
+        }
+    }
+    //tour de table puis emitState
+
+    check = (player) => {
+        if (player === this.state.currentPlayer){
+            this.nextPlayer();
+        }
+    }
+
+    nextPlayer = () => {
+        this.state.currentPlayer = (this.state.currentPlayer++) % this.players.length
+    }
+
+    blinds = async () => {
+        while (this.state.currentPlayer !== this.state.firstHighestPlayer)
+        {
+            this.emitState();
         }
     }
 
     playRound = async () => {
         await this.distributeCards();
         await this.emitState();
+        //await this.blinds();
         /*
-        * await this.blinds();
+        *
         * this.playersInteractions();
         * this.flop();
         * this.playersInteractions();
@@ -78,6 +90,7 @@ class Game {
         * this.decideWinner();
         * this.distributeMoney();
         * */
+        console.log("end of playRound");
     }
 
     distributeCards = async () => {

@@ -387,12 +387,17 @@ class _class extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
     super(props);
 
     _defineProperty(this, "feedSocket", () => {
-      this.socket.on("turnPlayer", () => {}).on("cards", cards => this.setState(this.currentCards = cards)).on("state", state => this.setState(this.currentState = state));
+      this.socket.on("turnPlayer", () => {}).on("cards", cards => this.setState[cards]).on("state", state => this.setState(state));
     });
 
     this.socket = props.socket;
-    this.currentCards = [];
-    this.currentState = null;
+    this.state = {
+      cards: [],
+      currentPlayer: -1,
+      dealer: -1,
+      highestBet: -1,
+      firstHighestPlayer: -1
+    };
     this.feedSocket();
   }
 
@@ -413,7 +418,7 @@ class _class extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
       onClick: () => this.socket.emit("follow")
     }, "Follow"), __jsx("button", {
       onClick: () => this.socket.emit("raise")
-    }, "Raise"), __jsx("div", null, this.currentCards), __jsx("div", null, this.currentState));
+    }, "Raise"), __jsx("div", null, "Cards: ", this.state.cards), __jsx("div", null, "Current player: ", this.state.currentPlayer), __jsx("div", null, "Dealer: ", this.state.dealer), __jsx("div", null, "Highest bet: ", this.state.highestBet), __jsx("div", null, "Biggest bet from player: ", this.state.firstHighestPlayer));
   }
 
 }

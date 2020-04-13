@@ -1,20 +1,18 @@
 class Interactions {
 
-    constructor(player, socket, id, state) {
-        this.id = id;
-        this.socket = socket;
-        this.check = false;
-        this.pass = false;
-        this.checkOrPass = false;
-        this.follow = false;
-        this.raise = state.max;
+    constructor(game, player) {
+        //game & player
+        this.player = player;
+        this.game = game;
+        this.socket = player.socket;
         this.feedSocket();
     }
 
     feedSocket = () => {
 
         this.socket.on("check", () => {
-
+            //game dans check
+            this.game.check(this.player);
         })
             .on("checkOrPass", () => {
                 //Poker.changePlayer();
@@ -28,7 +26,6 @@ class Interactions {
             .on("raise", () => {
 
             });
-
     };
 
 }

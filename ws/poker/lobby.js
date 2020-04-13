@@ -30,7 +30,7 @@ class Lobby {
             .on("start", () => {
                 //console.log(Lobby.players, "polo");
                 const playerArr = [...Lobby.players];
-                const game = new Game(playerArr, socket, id);
+                const game = new Game(playerArr);
                 Lobby.game.push(game);
                 game.start();
                 //throw new Error("message")

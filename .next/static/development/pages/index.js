@@ -48,15 +48,20 @@ var _default = /*#__PURE__*/function (_Component) {
 
     Object(_babel_runtime_helpers_esm_defineProperty__WEBPACK_IMPORTED_MODULE_6__["default"])(Object(_babel_runtime_helpers_esm_assertThisInitialized__WEBPACK_IMPORTED_MODULE_2__["default"])(_this), "feedSocket", function () {
       _this.socket.on("turnPlayer", function () {}).on("cards", function (cards) {
-        return _this.setState(_this.currentCards = cards);
+        return _this.setState[cards];
       }).on("state", function (state) {
-        return _this.setState(_this.currentState = state);
+        return _this.setState(state);
       });
     });
 
     _this.socket = props.socket;
-    _this.currentCards = [];
-    _this.currentState = null;
+    _this.state = {
+      cards: [],
+      currentPlayer: -1,
+      dealer: -1,
+      highestBet: -1,
+      firstHighestPlayer: -1
+    };
 
     _this.feedSocket();
 
@@ -100,7 +105,7 @@ var _default = /*#__PURE__*/function (_Component) {
         onClick: function onClick() {
           return _this2.socket.emit("raise");
         }
-      }, "Raise"), __jsx("div", null, this.currentCards), __jsx("div", null, this.currentState));
+      }, "Raise"), __jsx("div", null, "Cards: ", this.state.cards), __jsx("div", null, "Current player: ", this.state.currentPlayer), __jsx("div", null, "Dealer: ", this.state.dealer), __jsx("div", null, "Highest bet: ", this.state.highestBet), __jsx("div", null, "Biggest bet from player: ", this.state.firstHighestPlayer));
     }
   }]);
 
