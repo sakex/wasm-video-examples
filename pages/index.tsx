@@ -53,7 +53,11 @@ export default class Index extends Component<{}, State> {
         this.socket.on("members", (members: string[]) => this.setState({members}));
 
         this.socket.on("candidate", ({senderId, candidate}) => {
-            this.streaming.add_ice_candidate(senderId, candidate);
+            try {
+                this.streaming.add_ice_candidate(senderId, candidate);
+            } catch (err) {
+                console.error(err);
+            }
         });
 
         this.socket.on("call", async ({senderId, data}: CallParams) => {
@@ -63,7 +67,6 @@ export default class Index extends Component<{}, State> {
                 this.streaming.set_on_ice_candidate(senderId, (candidate) => {
                     this.socket.emit("candidate", {candidate, senderId: this.state.conId, id: senderId});
                 });
-                await this.streaming.load_video();
                 const answer = await this.streaming.accept_offer(senderId, offer).get_offer();
                 this.socket.emit("answer", ({id: senderId, senderId: this.state.conId, data: JSON.stringify(answer)}));
                 const ids = this.streaming.get_ids();
@@ -94,6 +97,7 @@ export default class Index extends Component<{}, State> {
                 this.socket.emit("candidate", {candidate, senderId: this.state.conId, id: user});
             });
             const offer = await this.streaming.create_offer(user).get_offer();
+
             this.socket.emit("call", ({id: user, senderId: this.state.conId, data: JSON.stringify(offer)}));
             const ids = this.streaming.get_ids();
             if (ids.length > 1) {
