@@ -14,7 +14,8 @@ export default class extends Component {
             dealer:-1,
             highestBet:-1,
             firstHighestPlayer:-1,
-            bets:[]
+            bets:[],
+            raise:-1
         };
         this.feedSocket();
     }
@@ -43,12 +44,15 @@ export default class extends Component {
                 <button onClick={() => this.socket.emit("start")}>start</button>
                 {/*
                 this are for the game
+                <button onClick={() => this.socket.emit("checkOrPass")}>Check or Pass</button>
                 */}
                 <button onClick={() => this.socket.emit("check")}>Check</button>
-                <button onClick={() => this.socket.emit("checkOrPass")}>Check or Pass</button>
-                <button onClick={() => this.socket.emit("pass")}>Pass</button>
                 <button onClick={() => this.socket.emit("follow")}>Follow</button>
-                <button onClick={() => this.socket.emit("raise")}>Raise</button>
+
+                <button value={this.state.raise} onClick={() => this.socket.emit("raise", this.raise)}>Raise</button>
+                <input type="text" placeholder="Higher than the highest bet" defaultValue={this.state.raise} />
+                <button onClick={() => this.socket.emit("pass")}>Pass</button>
+
                 <div>Cards: {this.state.cards}</div>
                 <div>You are player nb: {this.state.index}</div>
                 <div>Dealer: {this.state.dealer}</div>

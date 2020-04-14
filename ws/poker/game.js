@@ -75,7 +75,27 @@ class Game {
             this.bets[this.state.currentPlayer] < this.state.highestBet){
             console.log("follow is valid")
             this.bets[this.state.currentPlayer] = this.state.highestBet;
-            this.nextPlayer(player);
+            this.nextPlayer();
+        }
+    }
+
+    raise = (player, raise) => {
+        if (this.players.indexOf(player) === this.state.currentPlayer &&
+            this.bets[this.state.currentPlayer] < this.state.highestBet &&
+            raise > this.state.highestBet){
+            console.log("raise is valid")
+            this.bets[this.state.currentPlayer] = raise;
+            this.state.highestBet = raise;
+            this.state.firstHighestPlayer = this.state.currentPlayer;
+            this.nextPlayer();
+        }
+    }
+
+    pass = (player) => {
+        if (this.players.indexOf(player) === this.state.currentPlayer){
+            console.log("pass is valid")
+            this.bets[this.state.currentPlayer] = -1;
+            this.nextPlayer();
         }
     }
 

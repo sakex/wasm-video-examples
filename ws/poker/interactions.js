@@ -17,16 +17,15 @@ class Interactions {
             .on("checkOrPass", () => {
                 //Poker.changePlayer();
             })
-            .on("pass", () => {
+            .on("pass", (raise) => {
                 //to give up we change the bets to -1 and he will be skipped automatically
-                this.game.bets[this.game.state.currentPlayer] = -1;
-                this.game.nextPlayer();
+                this.game.pass(this.player, raise);
             })
             .on("follow", () => {
                 this.game.follow(this.player);
             })
             .on("raise", () => {
-
+                this.game.raise(this.player);
             });
     };
 
