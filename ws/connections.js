@@ -16,11 +16,11 @@ class SocketWrapper {
         this.socket.emit(message, data);
     };
 
-    static addMember = (socket) => {
+    static addMember = (inputName, socket) => {
         const current = SocketWrapper.currentId++;
-        const co = new SocketWrapper(socket, current);
-        SocketWrapper.connections[current] = co;
-        socket.emit("connectionId", current);
+        const name = `${inputName}_${current}`;
+        SocketWrapper.connections[name] = new SocketWrapper(socket, name);
+        socket.emit("connectionId", name);
         SocketWrapper.emitMembers();
     };
 
@@ -29,19 +29,41 @@ class SocketWrapper {
     };
 
     feedSocket = () => {
-        this.socket.on("call", ({id, selfId, data}) => {
-            SocketWrapper.connections[id].emit("call", {id, selfId, data});
+        this.socket.on("call", ({id, senderId, data}) => {
+            try {
+                SocketWrapper.connections[id].emit("call", {id, senderId, data});
+            } catch (err) {
+                this.socket.emit("err", `${id} not connected`);
+            }
         })
-            .on("answer", ({id, selfId, data}) => {
-                SocketWrapper.connections[id].emit("answer", {id, selfId, data});
+            .on("answer", ({id, senderId, data}) => {
+                try {
+                    SocketWrapper.connections[id].emit("answer", {id, senderId, data});
+                } catch (err) {
+                    this.socket.emit("err", `${id} not connected`);
+                }
             })
-            .on("candidate", ({id, candidate}) => {
-                SocketWrapper.connections[id].emit("candidate", {id, candidate});
-
+            .on("callMembers", ({id, members}) => {
+                try {
+                    SocketWrapper.connections[id].emit("callMembers", members);
+                } catch (err) {
+                    this.socket.emit("err", `${id} not connected`);
+                }
+            })
+            .on("candidate", ({id, senderId, candidate}) => {
+                try {
+                    SocketWrapper.connections[id].emit("candidate", {id, senderId, candidate});
+                } catch (err) {
+                    this.socket.emit("err", `${id} not connected`);
+                }
             })
             .on("disconnect", () => {
-                delete SocketWrapper.connections[this.id];
-                SocketWrapper.emitMembers();
+                try {
+                    delete SocketWrapper.connections[this.id];
+                    SocketWrapper.emitMembers();
+                } catch (err) {
+
+                }
             });
     };
 }

@@ -13,7 +13,9 @@ const {SocketWrapper} = require("./ws/connections");
 SocketWrapper.IO = io;
 
 io.on("connection", client => {
-    SocketWrapper.addMember(client);
+    client.on("enterId", inputName => {
+        SocketWrapper.addMember(inputName, client);
+    });
 });
 
 nextApp.prepare().then(() => {

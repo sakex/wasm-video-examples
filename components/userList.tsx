@@ -1,15 +1,35 @@
 import React from 'react';
+import Styled from "styled-components";
+
+const Button = Styled.button`
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid black;
+    background-color: white;
+    transition: 1s;
+    width: 200px;
+    text-align: center;
+    cursor: pointer;
+    
+    &:hover {
+        color: white;
+        background-color: black;
+    }
+`;
 
 
 interface PropsList {
-    conId: number,
-    members: number[],
-    callRemote: (user: number) => void
+    conId: string,
+    members: string[],
+    callRemote: (user: string) => void
 }
 
 export const UserList = ({conId, members, callRemote}: PropsList) => (
-    <ul>
-        {members.map(member => <li onClick={() => callRemote(member)}
-                                   key={member}>{member != conId ? member : "you"}</li>)}
-    </ul>
+    <div>
+        {members.map(member => <p key={member}>
+            {member != conId ? <Button onClick={() => callRemote(member)}
+            >{`Call ${member.split("_")[0]}`}
+            </Button> : <span>{`you (${conId.split("_")[0]})`}</span>}
+        </p>)}
+    </div>
 );

@@ -1,76 +1,141 @@
 import React, {Component} from 'react';
-import io from 'socket.io-client';
 import {UserList} from "@components/userList";
 import Poker from "@components/poker.jsx";
+import SocketIOClient from "socket.io-client";
 
 interface State {
-    conId: number,
-    members: number[]
+    conId: string,
+    members: string[],
+    inputName: string
 }
 
 interface CallParams {
-    id: number,
-    selfId: number,
+    id: string,
+    senderId: string,
     data: string
 }
 
 export default class Index extends Component<{}, State> {
-    public state: State = {conId: -1, members: []};
-    private socket;
+    public state: State = {conId: null, members: [], inputName: ""};
+    private readonly socket: SocketIOClient.Socket;
     private streaming;
-    static Streaming;
-    private candidates = [];
-    private peer;
+
+    constructor(props) {
+        super(props);
+        this.socket = SocketIOClient();
+    }
+
+    sendName = async () => {
+        this.loadSocket();
+        this.socket.emit("enterId", this.state.inputName);
+    };
+
+    loadSocket = () => {
+        this.socket.on("connectionId", async (conId: string) => {
+            await this.setState({conId: conId.toString()});
+            try {
+                await this.streaming.load_video();
+            } catch (err) {
+                alert("Couldn't load video");
+            }
+        });
+
+        this.socket.on("callMembers", async (members: string[]) => {
+            const ids = this.streaming.get_ids();
+            members.forEach((id: string) => {
+                if (!ids.has(id)) this.callRemote(id);
+            });
+        });
+
+        this.socket.on("err", (error: string) => {
+            console.error(`An error occured: ${error}`);
+        });
+
+        this.socket.on("members", (members: string[]) => this.setState({members}));
+
+        this.socket.on("candidate", ({senderId, candidate}) => {
+            try {
+                this.streaming.add_ice_candidate(senderId, candidate);
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        this.socket.on("call", async ({senderId, data}: CallParams) => {
+            try {
+                this.streaming.create_connection(senderId);
+                const offer = JSON.parse(data);
+                this.streaming.set_on_ice_candidate(senderId, (candidate) => {
+                    this.socket.emit("candidate", {candidate, senderId: this.state.conId, id: senderId});
+                });
+                const answer = await this.streaming.accept_offer(senderId, offer).get_offer();
+                this.socket.emit("answer", ({id: senderId, senderId: this.state.conId, data: JSON.stringify(answer)}));
+                const ids = this.streaming.get_ids();
+                if (ids.length > 1) {
+                    this.socket.emit("callMembers", ({id: senderId, members: [...this.streaming.get_ids()]}));
+                }
+            } catch (err) {
+                console.error("already connected");
+            }
+        });
+
+        this.socket.on("answer", async ({senderId, data}: CallParams) => {
+            const offer = JSON.parse(data);
+            await this.streaming.accept_answer(senderId, offer).get_offer();
+        });
+    };
 
     async componentDidMount() {
         const {Streaming, init_panic_hook} = await import("@video-stream");
         init_panic_hook();
-        Index.Streaming = Streaming;
-        this.streaming = new Index.Streaming(document.querySelector("#firstVideo"));
-        this.peer = this.streaming.get_peer();
-        Reflect.set(window, "peer", this.peer);
-        this.socket = io();
-        this.socket.on("candidate", ({id, candidate}) => {
-            this.candidates.push(candidate);
-            this.streaming.add_ice_candidate(candidate);
-        });
-        this.socket.on("connectionId", (conId: number) => this.setState({conId}));
-        this.socket.on("members", (members: number[]) => this.setState({members}));
-        this.socket.on("call", async ({id, selfId, data}: CallParams) => {
-            const offer = JSON.parse(data);
-            this.streaming.set_on_ice_candidate((candidate) => {
-                this.socket.emit("candidate", {candidate: candidate, id: selfId});
-            });
-            const answer = await this.streaming.accept_offer(offer).get_offer();
-            this.socket.emit("answer", ({id: selfId, selfId: this.state.conId, data: JSON.stringify(answer)}));
-            this.candidates.forEach(c => this.streaming.add_ice_candidate(c));
-            console.log(this.candidates);
-            await this.streaming.load_video();
-        });
-        this.socket.on("answer", async ({id, selfId, data}: CallParams) => {
-            const offer = JSON.parse(data);
-            await this.streaming.accept_answer(offer).get_offer();
-            await this.streaming.load_video();
-            this.candidates.forEach(c => this.streaming.add_ice_candidate(c));
-            console.log(this.candidates);
-        });
+        this.streaming = new Streaming(document.querySelector("#firstVideo"));
     }
 
+    callRemote = async (user: string) => {
+        try {
+            this.streaming.create_connection(user);
+            this.streaming.set_on_ice_candidate(user, (candidate) => {
+                this.socket.emit("candidate", {candidate, senderId: this.state.conId, id: user});
+            });
+            const offer = await this.streaming.create_offer(user).get_offer();
 
-    callRemote = async (user: number) => {
-        this.streaming.set_on_ice_candidate((candidate) => {
-            this.socket.emit("candidate", {candidate: candidate, id: user});
+            this.socket.emit("call", ({id: user, senderId: this.state.conId, data: JSON.stringify(offer)}));
+            const ids = this.streaming.get_ids();
+            if (ids.length > 1) {
+                this.socket.emit("callMembers", ({id: user, members: [...this.streaming.get_ids()]}));
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    valueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        this.setState({inputName: e.target.value});
+    };
+
+    keyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.which === 13) this.sendName().then(() => {
         });
-        const offer = await this.streaming.create_offer().get_offer();
-        this.socket.emit("call", ({id: user, selfId: this.state.conId, data: JSON.stringify(offer)}));
     };
 
     render() {
         return (
             <>
-                {this.state.conId != -1 && <Poker socket={this.socket} />}
+                {this.state.conId && this.state.conId.length && <Poker socket={this.socket} />}
                 <div id="firstVideo"/>
-                <UserList callRemote={this.callRemote} {...this.state}/>
+                {this.state.conId ? <>
+                        <UserList callRemote={this.callRemote} {...this.state}/>
+                    </> :
+                    <>
+                        <div>Please enter your name:
+                            <p>
+                                <input type={"text"} value={this.state.inputName} onKeyPress={this.keyPress}
+                                       onChange={this.valueChange}/>
+                                <button onClick={this.sendName}>Send name</button>
+                            </p>
+                        </div>
+                    </>
+                }
             </>
         );
     }
