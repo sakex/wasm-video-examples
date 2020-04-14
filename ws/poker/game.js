@@ -29,14 +29,18 @@ class Game {
         this.players = players;
         this.deck = null;
         this.bets = new Array(players.length).fill(0);
+        this.smallBlind = 5;
+        this.bigBlind = 10;
 
         const firstDealer = Math.round(Math.random() * this.players.length);
 
         this.state = {
-            currentPlayer: (firstDealer + 2) % this.players.length,
             dealer: firstDealer,
+            currentPlayer: (firstDealer + 3) % this.players.length,
             highestBet: this.bets.max,
-            firstHighestPlayer: firstDealer + 2 % this.players.length,
+            firstHighestPlayer: (firstDealer + 2) % this.players.length,
+            bets: this.bets
+            //display to each player who he is compared to currentPlayer
         };
     }
 
@@ -44,7 +48,10 @@ class Game {
 
     emitState = () => {
         //console.log(this.state)
-        this.players.forEach((player) => player.socket.emit("state", this.state));
+        this.players.forEach((player, index) => {
+            player.socket.emit("state", this.state);
+            player.socket.emit("index", index);
+        });
     };
 
     start = async () => {
@@ -55,16 +62,18 @@ class Game {
             return;
         }
     }
-    //tour de table puis emitState
 
     check = (player) => {
+        console.log("check")
         if (player === this.state.currentPlayer){
+            this.bets[this.state.currentPlayer] = this.state.highestBet;
             this.nextPlayer();
         }
     }
 
     nextPlayer = () => {
         this.state.currentPlayer = (this.state.currentPlayer++) % this.players.length
+
     }
 
     blinds = async () => {
@@ -72,12 +81,15 @@ class Game {
         {
             this.emitState();
         }
+
     }
 
     playRound = async () => {
+        this.bets[(this.state.dealer+1) % this.players.length] = this.smallBlind;
+        this.bets[(this.state.dealer+2) % this.players.length] = this.bigBlind;
         await this.distributeCards();
-        await this.emitState();
-        //await this.blinds();
+        //await this.emitState();
+        await this.blinds();
         /*
         *
         * this.playersInteractions();
