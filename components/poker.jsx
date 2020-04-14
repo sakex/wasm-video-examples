@@ -25,18 +25,25 @@ export default class extends Component {
         this.socket.on("turnPlayer", () => {
         })
             .on("cards", (cards) => this.setState({ cards }))
-            .on("state", (state) => this.setState(state))
-            .on("index", (index) => this.setState({index}))
+            .on("state", (state, index) => {
+                this.setState(state);
+                this.setState({ index });
+            })
     };
 
 
     render() {
         return (
             <>
+                {/*
+                this are for the lobby
+                */}
                 <button onClick={() => this.socket.emit("join")}>join</button>
                 <button onClick={() => this.socket.emit("leave")}>leave</button>
                 <button onClick={() => this.socket.emit("start")}>start</button>
-
+                {/*
+                this are for the game
+                */}
                 <button onClick={() => this.socket.emit("check")}>Check</button>
                 <button onClick={() => this.socket.emit("checkOrPass")}>Check or Pass</button>
                 <button onClick={() => this.socket.emit("pass")}>Pass</button>
@@ -44,11 +51,12 @@ export default class extends Component {
                 <button onClick={() => this.socket.emit("raise")}>Raise</button>
                 <div>Cards: {this.state.cards}</div>
                 <div>You are player nb: {this.state.index}</div>
-                <div>Current player: {this.state.currentPlayer}</div>
                 <div>Dealer: {this.state.dealer}</div>
-                <div>Highest bet: {this.state.highestBet}</div>
-                <div>Biggest bet from player: {this.state.firstHighestPlayer}</div>
+                <div>Current player: {this.state.currentPlayer}</div>
                 <div>The bets are: {this.state.bets}</div>
+                <div>Your bet is: {this.state.bets[this.state.index]}</div>
+                <div>Highest bet: {this.state.highestBet}</div>
+                <div>Player with highest bet: {this.state.firstHighestPlayer}</div>
             </>
         );
     }

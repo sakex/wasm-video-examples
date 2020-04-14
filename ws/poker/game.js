@@ -28,7 +28,7 @@ class Game {
     constructor(players) {
         this.players = players;
         this.deck = null;
-        this.bets = new Array(players.length).fill(0);
+        this.bets = new Array(this.players.length);
         this.smallBlind = 5;
         this.bigBlind = 10;
 
@@ -36,11 +36,10 @@ class Game {
 
         this.state = {
             dealer: firstDealer,
-            currentPlayer: (firstDealer + 3) % this.players.length,
-            highestBet: this.bets.max,
             firstHighestPlayer: (firstDealer + 2) % this.players.length,
-            bets: this.bets
-            //display to each player who he is compared to currentPlayer
+            currentPlayer: (firstDealer + 3) % this.players.length,
+            bets: this.bets,
+            highestBet: -1
         };
     }
 
@@ -49,8 +48,7 @@ class Game {
     emitState = () => {
         //console.log(this.state)
         this.players.forEach((player, index) => {
-            player.socket.emit("state", this.state);
-            player.socket.emit("index", index);
+            player.socket.emit("state", this.state, index);
         });
     };
 
@@ -64,32 +62,57 @@ class Game {
     }
 
     check = (player) => {
-        console.log("check")
-        if (player === this.state.currentPlayer){
-            this.bets[this.state.currentPlayer] = this.state.highestBet;
+        if (this.players.indexOf(player) === this.state.currentPlayer &&
+            this.bets[this.state.currentPlayer] === this.state.highestBet){
+            console.log("check is valid")
+            //this.bets[this.state.currentPlayer] = this.state.highestBet;
             this.nextPlayer();
         }
     }
 
-    nextPlayer = () => {
-        this.state.currentPlayer = (this.state.currentPlayer++) % this.players.length
-
+    follow = (player) => {
+        if (this.players.indexOf(player) === this.state.currentPlayer &&
+            this.bets[this.state.currentPlayer] < this.state.highestBet){
+            console.log("follow is valid")
+            this.bets[this.state.currentPlayer] = this.state.highestBet;
+            this.nextPlayer(player);
+        }
     }
 
-    blinds = async () => {
+    nextPlayer = () => {
+        //skip a player that passed by checking if it's bet === -1
+        const i = 1;
+        while (this.bets[this.state.currentPlayer + i] === -1 &&
+        (this.state.currentPlayer + i) % this.players.length !== this.state.currentPlayer ) {
+            i++;
+        }
+        this.state.currentPlayer = (this.state.currentPlayer + i) % this.players.length
+        this.emitState();
+    }
+
+    turnTable = async () => {
         while (this.state.currentPlayer !== this.state.firstHighestPlayer)
         {
+            //console.log("your are still in blinds fct")
             this.emitState();
+            await Game.awaitTimer(300);
         }
 
     }
 
-    playRound = async () => {
+    blinds = async () => {
+        this.bets.fill(0);
         this.bets[(this.state.dealer+1) % this.players.length] = this.smallBlind;
         this.bets[(this.state.dealer+2) % this.players.length] = this.bigBlind;
+        this.state.highestBet = Math.max(...this.bets);
+        console.log("blinds are done");
+    }
+
+    playRound = async () => {
+        await this.blinds();
         await this.distributeCards();
         //await this.emitState();
-        await this.blinds();
+        await this.turnTable();
         /*
         *
         * this.playersInteractions();
@@ -121,7 +144,7 @@ class Game {
         this.players.forEach((player, index) => {
             player.socket.emit("cards", toSend[index])
         });
-        await Game.awaitTimer(10000);
+        await Game.awaitTimer(1000);
     };
 }
 

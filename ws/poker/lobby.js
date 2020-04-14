@@ -17,12 +17,12 @@ class Lobby {
 
 
         this.socket.on("join", () => {
-            console.log(" Your id is: ", this.id);
-            console.log(" Size is: ", Lobby.players.size);
-
             if (!Lobby.players.has(this) && Lobby.players.size < Lobby.maxPlayer) {
                 Lobby.players.add(this);
+                console.log(" Your id is: ", this.id);
+                console.log(" Size of the table is now: ", Lobby.players.size);
             }
+
         })
             .on("leave", () => {
                 Lobby.players.delete(this);

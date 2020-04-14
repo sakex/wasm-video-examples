@@ -18,10 +18,12 @@ class Interactions {
                 //Poker.changePlayer();
             })
             .on("pass", () => {
-
+                //to give up we change the bets to -1 and he will be skipped automatically
+                this.game.bets[this.game.state.currentPlayer] = -1;
+                this.game.nextPlayer();
             })
             .on("follow", () => {
-
+                this.game.follow(this.player);
             })
             .on("raise", () => {
 
