@@ -32,6 +32,11 @@ export default class extends Component {
             })
     };
 
+    valueChange = (e) => {
+        this.setState({raise: e.target.value});
+    };
+
+    }
 
     render() {
         return (
@@ -48,9 +53,8 @@ export default class extends Component {
                 */}
                 <button onClick={() => this.socket.emit("check")}>Check</button>
                 <button onClick={() => this.socket.emit("follow")}>Follow</button>
-
                 <button value={this.state.raise} onClick={() => this.socket.emit("raise", this.raise)}>Raise</button>
-                <input type="text" placeholder="Higher than the highest bet" defaultValue={this.state.raise} />
+                <input placeholder="Higher than the highest bet" defaultValue={this.state.raise} onChange={this.valueChange}/>
                 <button onClick={() => this.socket.emit("pass")}>Pass</button>
 
                 <div>Cards: {this.state.cards}</div>
