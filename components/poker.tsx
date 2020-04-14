@@ -1,22 +1,44 @@
 import React, {Component} from "react";
+import {PokerGame} from "../pokerGame/pokerGame";
+import Styled from "styled-components";
 
-export default class extends Component {
+const GameParent = Styled.div`
+    width: 800px;
+    height: 600px;
+`;
 
-    static turnSeconds = 0;
+interface PokerProps {
+    socket: SocketIOClient.Socket
+}
+
+interface PokerState {
+    index: number,
+    cards: string[],
+    currentPlayer: number,
+    dealer: number,
+    highestBet: number,
+    firstHighestPlayer: number,
+    bets: number[],
+    raise: number
+}
+
+export default class extends Component<PokerProps, PokerState> {
+    private game: PokerGame;
+    private readonly socket: SocketIOClient.Socket;
+    public readonly state: PokerState = {
+        index: -1,
+        cards: [],
+        currentPlayer: -1,
+        dealer: -1,
+        highestBet: -1,
+        firstHighestPlayer: -1,
+        bets: [],
+        raise: -1
+    };
 
     constructor(props) {
         super(props);
         this.socket = props.socket;
-        this.state = {
-            index: -1,
-            cards: [],
-            currentPlayer: -1,
-            dealer: -1,
-            highestBet: -1,
-            firstHighestPlayer: -1,
-            bets: [],
-            raise: -1
-        };
         this.feedSocket();
     }
 
@@ -25,7 +47,10 @@ export default class extends Component {
 
         this.socket.on("turnPlayer", () => {
         })
-            .on("cards", (cards) => this.setState({cards}))
+            .on("cards", (cards: [[number, string], [number, string]]) => {
+                console.log(cards);
+                this.game.gotCards(...cards);
+            })
             .on("state", (state, index) => {
                 this.setState(state);
                 this.setState({index});
@@ -35,6 +60,11 @@ export default class extends Component {
     valueChange = (e) => {
         this.setState({raise: e.target.value});
     };
+
+    componentDidMount() {
+        this.game = new PokerGame(document.querySelector("#__poker_parent"));
+        this.game.startRendering();
+    }
 
     render() {
         return (
@@ -51,12 +81,12 @@ export default class extends Component {
                 */}
                 <button onClick={() => this.socket.emit("check")}>Check</button>
                 <button onClick={() => this.socket.emit("follow")}>Follow</button>
-                <button value={this.state.raise} onClick={() => this.socket.emit("raise", this.raise)}>Raise</button>
+                <button value={this.state.raise} onClick={() => this.socket.emit("raise", this.state.raise)}>Raise
+                </button>
                 <input placeholder="Higher than the highest bet" defaultValue={this.state.raise}
                        onChange={this.valueChange}/>
                 <button onClick={() => this.socket.emit("pass")}>Pass</button>
 
-                <div>Cards: {this.state.cards}</div>
                 <div>You are player nb: {this.state.index}</div>
                 <div>Dealer: {this.state.dealer}</div>
                 <div>Current player: {this.state.currentPlayer}</div>
@@ -64,6 +94,7 @@ export default class extends Component {
                 <div>Your bet is: {this.state.bets[this.state.index]}</div>
                 <div>Highest bet: {this.state.highestBet}</div>
                 <div>Player with highest bet: {this.state.firstHighestPlayer}</div>
+                <GameParent id={"__poker_parent"}/>
             </>
         );
     }

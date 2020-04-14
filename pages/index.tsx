@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {UserList} from "@components/userList";
-import Poker from "@components/poker.jsx";
+import Poker from "@components/poker";
 import SocketIOClient from "socket.io-client";
 
 interface State {
