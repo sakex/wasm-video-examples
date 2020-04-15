@@ -1,4 +1,5 @@
 const Card = require("./card");
+const Winner = require("./winner");
 const Interactions = require("./interactions");
 
 const shuffleArray = (arr) => {
@@ -45,7 +46,8 @@ class Game {
             river: -1,
             turn: -1,
             playing: [],
-            started: false
+            started: false,
+            winner: [],
         }
     }
 
@@ -142,10 +144,8 @@ class Game {
     };
 
     nextPlayer = () => {
-        //skip a player that passed by checking if it's bet === -1
 
         // TODO: Ca ne peut pas marcher tout ca
-        let i = 1;
         while (!this.state.playing[this.state.currentPlayer + i] &&
         (this.state.currentPlayer + i) % this.players.length !== this.state.currentPlayer) {
             i++;
@@ -163,7 +163,6 @@ class Game {
             this.emitState();
             await Game.awaitTimer(300);
         }
-
     };
 
     blinds = async () => {
@@ -207,19 +206,49 @@ class Game {
 
     //func isflush..
     //list
-    checkHand = async () => {
-        let cards = {};
-        cards = this.state.flop;
-        cards[3] = this.state.river;
-        cards[4] = this.state.turn;
-        cards[5] = this.players[0].cards[0];
-        cards[6] = this.players[0].cards[1];
+    decideWinner = async () => {
+        let cards = [];
         const values = {};
-        cards.forEach((card) => {
-            if (card.value in values) values[card.value]++;
-            else values[card.value] = 1;
+        const colors = {};
+        cards.push(this.state.flop[0]);
+        cards.push(this.state.flop[1]);
+        cards.push(this.state.flop[2]);
+        cards.push(this.state.river);
+        cards.push(this.state.turn);
+
+        this.players.forEach((player, index) => {
+            cards.push(this.players[index].cards[0]);
+            cards.push(this.players[index].cards[1]);
+
+            cards.forEach((card) => {
+                if (card.value in values) {
+                    colors[card.value][values[card.value]] = card.color;
+                    values[card.value]++;
+                }
+                else {
+                    values[card.value] = 1;
+                    colors[card.value][0] = card.color;
+                }
+            });
+
+            //here call all the functions with values and colors as input
+            this.royalFlush(values, colors, cards, player);
+
+            //this.state.winner.push(new Winner(player, "test", cards));
+
+            cards.pop();
+            cards.pop();
         });
     }
+
+    royalFlush = (values, colors, cards, player) => {
+        if (values.slice(9,14).forEach(value => value >= 1)
+            && colors.slice(9,14).forEach(value => value.find(element => element === "spade") === "spade")){
+            this.state.winner.push(new Winner(player, "Royal flush", cards));
+        }
+    }
+
+
 
     playRound = async () => {
         await this.blinds();
@@ -235,8 +264,8 @@ class Game {
         await this.turn();
         await this.turnTable();
         await this.pot(3);
-        await this.checkHand();
-        //await this.decideWinner();
+        //await this.checkHand();
+        await this.decideWinner();
         //await this.distributeMoney();
         await this.checkValidPlayers();
         await this.dealerChange();
