@@ -103,6 +103,7 @@ class Game {
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
     }
 
+    // TODO: check... all in one function called with different params
     check = (player) => {
         if (this.players.indexOf(player) === this.state.currentPlayer &&
             this.state.bets[this.state.currentPlayer] === this.state.highestBet) {
@@ -166,6 +167,7 @@ class Game {
     };
 
     blinds = async () => {
+        // TODO: use cst to not comupute again
         this.state.bets[(this.state.dealer + 1) % this.players.length] = this.smallBlind;
         this.state.bets[(this.state.dealer + 2) % this.players.length] = this.bigBlind;
         this.state.tokens[(this.state.dealer + 1) % this.players.length] -= this.smallBlind;
@@ -203,9 +205,6 @@ class Game {
         });
     }
 
-
-    //func isflush..
-    //list
     decideWinner = async () => {
         let cards = [];
         const values = {};
@@ -233,6 +232,16 @@ class Game {
 
             //here call all the functions with values and colors as input
             this.royalFlush(values, colors, cards, player);
+            this.straightFLush(values, colors, cards, player);
+            this.fourOfKind(values, colors, cards, player);
+            this.fullHouse(values, colors, cards, player);
+            this.regularFlush(values, colors, cards, player);
+            this.royalFlush(values, colors, cards, player);
+            this.regularStraight(values, colors, cards, player);
+            this.threeOfKind(values, colors, cards, player);
+            this.twoPair(values, colors, cards, player);
+            this.regularPair(values, colors, cards, player);
+            this.highCard(values, colors, cards, player);
 
             //this.state.winner.push(new Winner(player, "test", cards));
 
@@ -248,7 +257,32 @@ class Game {
         }
     }
 
+    straightFLush = (values, colors, cards, player) => {
+    }
 
+    fourOfKind = (values, colors, cards, player) => {
+    }
+
+    fullHouse = (values, colors, cards, player) => {
+    }
+
+    regularFlush = (values, colors, cards, player) => {
+    }
+
+    regularStraight = (values, colors, cards, player) => {
+    }
+
+    threeOfKind = (values, colors, cards, player) => {
+    }
+
+    twoPair = (values, colors, cards, player) => {
+    }
+
+    regularPair = (values, colors, cards, player) => {
+    }
+
+    highCard = (values, colors, cards, player) => {
+    }
 
     playRound = async () => {
         await this.blinds();
