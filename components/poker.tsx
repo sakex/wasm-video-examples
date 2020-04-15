@@ -1,54 +1,61 @@
 import React, {Component} from "react";
-import {PokerGame} from "../pokerGame/pokerGame";
+import {PokerGame, PokerState} from "../pokerGame/pokerGame";
 import Styled from "styled-components";
 import {TableData} from "@components/lobby";
 
 const GameParent = Styled.div`
-    width: 1110px;
-    height: 810px;
+    width: 1100px;
+    height: 725.6px;
+`;
+
+const baseButton = `
+    cursor: pointer;
+    width: 100px;
+    height: 10x;
+    padding: 5px;
+    text-align: center;
+    border-radius: 10px;
+    border: 1px solid lightgrey;
+    display: inline-block;
+ `;
+
+const LeaveButton = Styled.div`
+    ${baseButton}
+    background-color: rgba(240, 10, 10, .7);
+    border: 1px solid red;
+    transition: 1s;
+    
+    &:hover {
+        background-color: red;
+    }
+`;
+
+const StartButton = Styled.div`
+    ${baseButton}
+    background-color: rgba(20, 200, 200, .7);
+    border: 1px solid cyan;
+    transition: 1s;
+    
+    &:hover {
+        background-color: blue;
+    }
 `;
 
 interface PokerProps {
     socket: SocketIOClient.Socket
 }
 
-interface PokerState {
-    index: number,
-    cards: string[],
-    currentPlayer: number,
-    dealer: number,
-    highestBet: number,
-    firstHighestPlayer: number,
-    bets: number[],
-    tokens: number[],
-    pot: number[],
-    flop: string[],
-    river: string,
-    turn: string,
-    playing: boolean[],
-    raise: number,
-    tables: TableData[]
+interface StartedState {
+    started: boolean,
+    raise: number
 }
 
-export default class extends Component<PokerProps, PokerState> {
+export default class extends Component<PokerProps, StartedState> {
     private game: PokerGame;
     private readonly socket: SocketIOClient.Socket;
-    public readonly state: PokerState = {
-        index: -1,
-        cards: [],
-        currentPlayer: -1,
-        dealer: -1,
-        highestBet: -1,
-        firstHighestPlayer: -1,
-        bets: [],
-        tokens: [],
-        pot: [],
-        flop: [],
-        river: "",
-        turn: "",
-        playing: [],
-        raise: -1,
-        tables: []
+    public readonly state: StartedState = {
+        started: false,
+        raise: 0
     };
 
     constructor(props) {
@@ -66,12 +73,10 @@ export default class extends Component<PokerProps, PokerState> {
                 console.log(cards);
                 this.game.gotCards(...cards);
             })
-            .on("tables", (tables: TableData[]) => {
-                this.setState({tables})
-            })
-            .on("state", (state, index) => {
-                this.setState(state);
-                this.setState({index});
+            .on("state", (state: PokerState, index) => {
+                this.setState({started: state.started});
+                this.game.setIndex(index);
+                this.game.setState(state);
             });
     };
 
@@ -81,38 +86,26 @@ export default class extends Component<PokerProps, PokerState> {
 
     componentDidMount() {
         this.game = new PokerGame(document.querySelector("#__poker_parent"));
-        this.game.startRendering();
     }
 
     render() {
         return (
             <>
-                {/*
-                this are for the lobby
-                */}
                 <GameParent id={"__poker_parent"}/>
-                <button onClick={() => this.socket.emit("join")}>join</button>
-                <button onClick={() => this.socket.emit("leave")}>leave</button>
-                <button onClick={() => this.socket.emit("start")}>start</button>
-                {/*
-                this are for the game
-                <button onClick={() => this.socket.emit("checkOrPass")}>Check or Pass</button>
-                */}
-                <button onClick={() => this.socket.emit("check")}>Check</button>
-                <button onClick={() => this.socket.emit("follow")}>Follow</button>
-                <button value={this.state.raise} onClick={() => this.socket.emit("raise", this.state.raise)}>Raise
-                </button>
-                <input placeholder="Higher than the highest bet" defaultValue={this.state.raise}
-                       onChange={this.valueChange}/>
-                <button onClick={() => this.socket.emit("pass")}>Pass</button>
-
-                <div>You are player nb: {this.state.index}</div>
-                <div>Dealer: {this.state.dealer}</div>
-                <div>Current player: {this.state.currentPlayer}</div>
-                <div>The bets are: {this.state.bets}</div>
-                <div>Your bet is: {this.state.bets[this.state.index]}</div>
-                <div>Highest bet: {this.state.highestBet}</div>
-                <div>Player with highest bet: {this.state.firstHighestPlayer}</div>
+                {!this.state.started ? <>
+                    <LeaveButton onClick={() => this.socket.emit("leave")}>leave</LeaveButton>
+                    <StartButton onClick={() => this.socket.emit("start")}>start</StartButton>
+                </>:
+                    <>
+                        <button onClick={() => this.socket.emit("check")}>Check</button>
+                        <button onClick={() => this.socket.emit("follow")}>Follow</button>
+                        <button value={this.state.raise} onClick={() => this.socket.emit("raise", this.state.raise)}>Raise
+                        </button>
+                        <input placeholder="Higher than the highest bet" defaultValue={this.state.raise}
+                               onChange={this.valueChange}/>
+                        <button onClick={() => this.socket.emit("pass")}>Pass</button>
+                    </>
+                }
             </>
         );
     }

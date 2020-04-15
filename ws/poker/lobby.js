@@ -29,7 +29,7 @@ class Lobby {
             try {
                 const game = Lobby.games[id];
                 if (!game.players.includes(this) && game.players.length < Lobby.maxPlayer) {
-                    this.socket.emit("joined");
+                    this.socket.emit("joined", true);
                     game.addPlayer(this);
                     this.game = game;
                     this.emitTables();
@@ -40,11 +40,12 @@ class Lobby {
         })
             .on("create", async (id) => {
                 const current = Lobby.lastGame++;
-                const game = new Game();
+                const game = new Game(`${id}_${current}`);
                 Lobby.games[`${id}_${current}`] = game;
                 game.addPlayer(this);
+                this.game = game;
                 this.emitTables();
-                this.socket.emit("joined");
+                this.socket.emit("joined", true);
             })
             .on("start", async () => {
                 try {
@@ -52,7 +53,17 @@ class Lobby {
                 } catch (e) {
                     console.error(e);
                 }
-            });
+            })
+            .on("leave", async () => {
+                const index = this.game.players.indexOf(this);
+                this.game.players.splice(index, 1);
+                if(this.game.players.length === 0) {
+                    delete Lobby.games[this.game.id];
+                }
+                this.game = undefined;
+                this.socket.emit("joined", false);
+                this.emitTables();
+        });
 
     };
 }

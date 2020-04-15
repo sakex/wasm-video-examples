@@ -25,7 +25,8 @@ class Game {
         });
     };
 
-    constructor() {
+    constructor(id) {
+        this.id = id;
         this.players = [];
         this.deck = null;
         this.bets = new Array(this.players.length);
@@ -46,7 +47,8 @@ class Game {
             flop: [],
             river: -1,
             turn: -1,
-            playing: new Array(this.players.length)
+            playing: new Array(this.players.length),
+            started: false
         }
     }
 
@@ -74,6 +76,8 @@ class Game {
     start = async () => {
         //console.log("start");
         this.feedInteractions();
+        this.state.started = true;
+        this.emitState();
         while (this.players.length > 0) {
             await this.playRound();
             return;

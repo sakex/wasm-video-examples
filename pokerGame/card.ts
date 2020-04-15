@@ -24,10 +24,10 @@ export class Card implements Sprite {
     private static ctx: CanvasRenderingContext2D;
     private static image: HTMLImageElement;
     private static genericPos: GenericPos = {
-        heart: {x: 188, y: 570},
-        diamond: {x: 180, y: 1335},
-        club: {x: 745, y: 570},
-        spade: {x: 1264, y: 570}
+        heart: {x: 185, y: 570},
+        diamond: {x: 170, y: 1325},
+        club: {x: 737, y: 570},
+        spade: {x: 1264, y: 600}
     };
 
     private static headPos: HeadPos = {

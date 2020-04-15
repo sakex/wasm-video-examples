@@ -38,7 +38,7 @@ export default class Index extends Component<{}, State> {
 
         this.socket.on("members", (members: string[]) => this.setState({members}));
 
-        this.socket.on("joined", () => this.setState({joined: true}));
+        this.socket.on("joined", (joined: boolean) => this.setState({joined}));
 
         this.socket.on("tables", (tables: TableData[]) => this.setState({tables}));
     };
