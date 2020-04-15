@@ -25,8 +25,8 @@ class Game {
         });
     };
 
-    constructor(players) {
-        this.players = players;
+    constructor() {
+        this.players = [];
         this.deck = null;
         this.bets = new Array(this.players.length);
         this.tokens = new Array(this.players.length).fill(10000);
