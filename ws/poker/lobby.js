@@ -28,11 +28,11 @@ class Lobby {
         this.socket.on("join", (id) => {
             try {
                 const game = Lobby.games[id];
-                if (!game.players.includes(this) && game.players.size < Lobby.maxPlayer) {
+                if (!game.players.includes(this) && game.players.length < Lobby.maxPlayer) {
+                    this.socket.emit("joined");
                     game.addPlayer(this);
                     this.game = game;
                     this.emitTables();
-                    this.socket.emit("joined");
                 }
             } catch (e) {
                 console.error(e);
