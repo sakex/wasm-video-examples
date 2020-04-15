@@ -25,10 +25,11 @@ class Game {
         })
     }
 
-    constructor() {
-        this.players = [];
+    constructor(players) {
+        this.players = players;
         this.deck = null;
         this.bets = new Array(this.players.length);
+        this.tokens = new Array(this.players.length).fill(10000);
         this.smallBlind = 5;
         this.bigBlind = 10;
 
@@ -39,8 +40,14 @@ class Game {
             firstHighestPlayer: (firstDealer + 2) % this.players.length,
             currentPlayer: (firstDealer + 3) % this.players.length,
             bets: this.bets,
-            highestBet: -1
-        };
+            tokens: this.tokens,
+            highestBet: -1,
+            pot: [],
+            flop: [],
+            river: -1,
+            turn: -1,
+            playing: new Array(this.players.length)
+        }
     }
 
     addPlayer = player => {
@@ -66,38 +73,42 @@ class Game {
 
     check = (player) => {
         if (this.players.indexOf(player) === this.state.currentPlayer &&
-            this.bets[this.state.currentPlayer] === this.state.highestBet){
+            this.bets[this.state.currentPlayer] === this.state.highestBet) {
             console.log("check is valid")
             //this.bets[this.state.currentPlayer] = this.state.highestBet;
             this.nextPlayer();
         }
     }
 
-    follow = (player) => {
+    call = (player) => {
         if (this.players.indexOf(player) === this.state.currentPlayer &&
-            this.bets[this.state.currentPlayer] < this.state.highestBet){
+            this.bets[this.state.currentPlayer] < this.state.highestBet &&
+            this.state.highestBet - this.bets[this.state.currentPlayer] <= this.tokens[this.state.currentPlayer]) {
             console.log("follow is valid")
-            this.bets[this.state.currentPlayer] = this.state.highestBet;
+            this.bets[this.state.currentPlayer] = his.state.highestBet;
+            t
+            this.tokens[this.state.currentPlayer] -= (this.state.highestBet + this.bets[this.state.currentPlayer]);
             this.nextPlayer();
         }
     }
 
     raise = (player, raise) => {
         if (this.players.indexOf(player) === this.state.currentPlayer &&
-            this.bets[this.state.currentPlayer] < this.state.highestBet &&
-            raise > this.state.highestBet){
+            raise + this.bets[this.state.currentPlayer] >= this.state.highestBet &&
+            raise <= this.tokens[this.state.currentPlayer]) {
             console.log("raise is valid")
-            this.bets[this.state.currentPlayer] = raise;
-            this.state.highestBet = raise;
+            this.bets[this.state.currentPlayer] += raise;
+            this.tokens[this.state.currentPlayer] -= raise;
+            this.state.highestBet = this.bets[this.state.currentPlayer];
             this.state.firstHighestPlayer = this.state.currentPlayer;
             this.nextPlayer();
         }
     }
 
     pass = (player) => {
-        if (this.players.indexOf(player) === this.state.currentPlayer){
+        if (this.players.indexOf(player) === this.state.currentPlayer) {
             console.log("pass is valid")
-            this.bets[this.state.currentPlayer] = -1;
+            this.state.playing[this.state.currentPlayer] = false;
             this.nextPlayer();
         }
     }
@@ -106,50 +117,78 @@ class Game {
         //skip a player that passed by checking if it's bet === -1
 
         // TODO: Ca ne peut pas marcher tout ca
-        const i = 1;
-        while (this.bets[this.state.currentPlayer + i] === -1 &&
-        (this.state.currentPlayer + i) % this.players.length !== this.state.currentPlayer ) {
+        let i = 1;
+        while (!this.state.playing[this.state.currentPlayer + i] &&
+        (this.state.currentPlayer + i) % this.players.length !== this.state.currentPlayer) {
             i++;
         }
-        this.state.currentPlayer = (this.state.currentPlayer + i) % this.players.length
+        this.state.currentPlayer = (this.state.currentPlayer + i) % this.players.length;
         this.emitState();
     }
 
     turnTable = async () => {
-        while (this.state.currentPlayer !== this.state.firstHighestPlayer)
-        {
+        while (this.state.currentPlayer !== this.state.firstHighestPlayer) {
             //console.log("your are still in blinds fct")
+            //setTimeout(this.nextFunction, 1000);
+            //clearTimeout(this.timeout); this.nexFunction()
+
             this.emitState();
             await Game.awaitTimer(300);
         }
-
     }
 
     blinds = async () => {
+        this.state.playing.fill(true);
         this.bets.fill(0);
-        this.bets[(this.state.dealer+1) % this.players.length] = this.smallBlind;
-        this.bets[(this.state.dealer+2) % this.players.length] = this.bigBlind;
+        this.bets[(this.state.dealer + 1) % this.players.length] = this.smallBlind;
+        this.bets[(this.state.dealer + 2) % this.players.length] = this.bigBlind;
+        this.tokens[(this.state.dealer + 1) % this.players.length] -= this.smallBlind;
+        this.tokens[(this.state.dealer + 2) % this.players.length] -= this.bigBlind;
         this.state.highestBet = Math.max(...this.bets);
         console.log("blinds are done");
+    }
+
+    flop = async () => {
+        this.bets.forEach(bet => this.state.pot[0] += bet);
+        this.bets.fill(0);
+        this.state.flop[0].push([this.deck.pop().serialize()]);
+        this.state.flop[1].push([this.deck.pop().serialize()]);
+        this.state.flop[2].push([this.deck.pop().serialize()]);
+    }
+
+    river = async () => {
+        this.bets.forEach(bet => this.state.pot[1] += bet);
+        this.bets.fill(0);
+        this.state.river.push([this.deck.pop().serialize()]);
+    }
+
+    turn = async () => {
+        this.bets.forEach(bet => this.state.pot[2] += bet);
+        this.bets.fill(0);
+        this.state.turn.push([this.deck.pop().serialize()]);
+    }
+
+    checkValidPlayers = async () => {
+        this.players.forEach((player, index) => {
+            if (this.tokens[this.state.currentPlayer] <= 0) {
+                this.players.delete(player);
+            }
+        });
     }
 
     playRound = async () => {
         await this.blinds();
         await this.distributeCards();
-        //await this.emitState();
         await this.turnTable();
-        /*
-        *
-        * this.playersInteractions();
-        * this.flop();
-        * this.playersInteractions();
-        * this.river();
-        * this.playersInteractions();
-        * this.turn();
-        * this.playersInteractions();
-        * this.decideWinner();
-        * this.distributeMoney();
-        * */
+        await this.flop();
+        await this.turnTable();
+        await this.river();
+        await this.turnTable();
+        await this.turn();
+        await this.turnTable();
+        //await this.decideWinner();
+        //await this.distributeMoney();
+        await this.checkValidPlayers();
         console.log("end of playRound");
     }
 
@@ -174,3 +213,4 @@ class Game {
 }
 
 module.exports = Game;
+

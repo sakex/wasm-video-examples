@@ -20,6 +20,12 @@ interface PokerState {
     highestBet: number,
     firstHighestPlayer: number,
     bets: number[],
+    tokens: number[],
+    pot: number[],
+    flop: string[],
+    river: string,
+    turn: string,
+    playing: boolean[],
     raise: number,
     tables: TableData[]
 }
@@ -35,6 +41,12 @@ export default class extends Component<PokerProps, PokerState> {
         highestBet: -1,
         firstHighestPlayer: -1,
         bets: [],
+        tokens: [],
+        pot: [],
+        flop: [],
+        river: "",
+        turn: "",
+        playing: [],
         raise: -1,
         tables: []
     };
