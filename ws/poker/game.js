@@ -14,16 +14,16 @@ const shuffleArray = (arr) => {
         arr[randomIndex] = temporaryValue;
     }
     return arr;
-}
+};
 
 class Game {
     static awaitTimer = (timer) => {
         return new Promise((resolve) => {
             setTimeout(() => {
-                resolve(timer)
+                resolve(timer);
             }, timer);
-        })
-    }
+        });
+    };
 
     constructor() {
         this.players = [];
@@ -43,11 +43,20 @@ class Game {
         };
     }
 
-    addPlayer = player => {
-        this.players.push(player);
-    }
+    addPlayer = newPlayer => {
+        this.players.push(newPlayer);
+        setTimeout(() => {
+            this.players.forEach(player => {
+                if(newPlayer.id !== player.id) {
+                    player.socket.emit("newPlayer", newPlayer.id);
+                }
+            });
+        }, 10000);
+    };
 
-    feedInteractions = () => this.players.forEach(player => new Interactions(this, player));
+    feedInteractions = () => {
+        this.players.forEach(player => new Interactions(this, player));
+    };
 
     emitState = () => {
         this.players.forEach((player, index) => {
@@ -57,50 +66,50 @@ class Game {
 
     start = async () => {
         //console.log("start");
-        this.feedInteractions()
+        this.feedInteractions();
         while (this.players.length > 0) {
             await this.playRound();
             return;
         }
-    }
+    };
 
     check = (player) => {
         if (this.players.indexOf(player) === this.state.currentPlayer &&
-            this.bets[this.state.currentPlayer] === this.state.highestBet){
-            console.log("check is valid")
+            this.bets[this.state.currentPlayer] === this.state.highestBet) {
+            console.log("check is valid");
             //this.bets[this.state.currentPlayer] = this.state.highestBet;
             this.nextPlayer();
         }
-    }
+    };
 
     follow = (player) => {
         if (this.players.indexOf(player) === this.state.currentPlayer &&
-            this.bets[this.state.currentPlayer] < this.state.highestBet){
-            console.log("follow is valid")
+            this.bets[this.state.currentPlayer] < this.state.highestBet) {
+            console.log("follow is valid");
             this.bets[this.state.currentPlayer] = this.state.highestBet;
             this.nextPlayer();
         }
-    }
+    };
 
     raise = (player, raise) => {
         if (this.players.indexOf(player) === this.state.currentPlayer &&
             this.bets[this.state.currentPlayer] < this.state.highestBet &&
-            raise > this.state.highestBet){
-            console.log("raise is valid")
+            raise > this.state.highestBet) {
+            console.log("raise is valid");
             this.bets[this.state.currentPlayer] = raise;
             this.state.highestBet = raise;
             this.state.firstHighestPlayer = this.state.currentPlayer;
             this.nextPlayer();
         }
-    }
+    };
 
     pass = (player) => {
-        if (this.players.indexOf(player) === this.state.currentPlayer){
-            console.log("pass is valid")
+        if (this.players.indexOf(player) === this.state.currentPlayer) {
+            console.log("pass is valid");
             this.bets[this.state.currentPlayer] = -1;
             this.nextPlayer();
         }
-    }
+    };
 
     nextPlayer = () => {
         //skip a player that passed by checking if it's bet === -1
@@ -108,30 +117,29 @@ class Game {
         // TODO: Ca ne peut pas marcher tout ca
         const i = 1;
         while (this.bets[this.state.currentPlayer + i] === -1 &&
-        (this.state.currentPlayer + i) % this.players.length !== this.state.currentPlayer ) {
+        (this.state.currentPlayer + i) % this.players.length !== this.state.currentPlayer) {
             i++;
         }
-        this.state.currentPlayer = (this.state.currentPlayer + i) % this.players.length
+        this.state.currentPlayer = (this.state.currentPlayer + i) % this.players.length;
         this.emitState();
-    }
+    };
 
     turnTable = async () => {
-        while (this.state.currentPlayer !== this.state.firstHighestPlayer)
-        {
+        while (this.state.currentPlayer !== this.state.firstHighestPlayer) {
             //console.log("your are still in blinds fct")
             this.emitState();
             await Game.awaitTimer(300);
         }
 
-    }
+    };
 
     blinds = async () => {
         this.bets.fill(0);
-        this.bets[(this.state.dealer+1) % this.players.length] = this.smallBlind;
-        this.bets[(this.state.dealer+2) % this.players.length] = this.bigBlind;
+        this.bets[(this.state.dealer + 1) % this.players.length] = this.smallBlind;
+        this.bets[(this.state.dealer + 2) % this.players.length] = this.bigBlind;
         this.state.highestBet = Math.max(...this.bets);
         console.log("blinds are done");
-    }
+    };
 
     playRound = async () => {
         await this.blinds();
@@ -151,7 +159,7 @@ class Game {
         * this.distributeMoney();
         * */
         console.log("end of playRound");
-    }
+    };
 
     distributeCards = async () => {
         const deck = [];
@@ -161,13 +169,13 @@ class Game {
         this.deck = shuffleArray(deck);
         const toSend = [];
         this.players.forEach(_ => {
-            toSend.push([this.deck.pop().serialize()])
+            toSend.push([this.deck.pop().serialize()]);
         });
         toSend.forEach(arr => {
-            arr.push(this.deck.pop().serialize())
+            arr.push(this.deck.pop().serialize());
         });
         this.players.forEach((player, index) => {
-            player.socket.emit("cards", toSend[index])
+            player.socket.emit("cards", toSend[index]);
         });
         await Game.awaitTimer(1000);
     };
