@@ -111,7 +111,9 @@ export const Lobby = (props: { tables: TableData[], socket: SocketIOClient.Socke
                     <Td>{table.id.split("_")[0]}</Td>
                     <Td>{table.players}</Td>
                     <Td>
-                        <JoinButton onClick={() => props.socket.emit("join", table.id)}>Join</JoinButton></Td>
+                        <JoinButton onClick={() => {
+                            props.socket.emit("join", table.id);
+                        }}>Join</JoinButton></Td>
                 </Tr>)}
                 </tbody>
             </Table>

@@ -27,11 +27,9 @@ export class VideoChat extends Component<VideoProps, {}> {
     }
 
     feedSocket = () => {
-        this.socket.on("callMembers", async (members: string[]) => {
+        this.socket.on("newPlayer", async (newPlayer: string) => {
             const ids = this.streaming.get_ids();
-            members.forEach((id: string) => {
-                if (!ids.has(id)) this.callRemote(id);
-            });
+            if (!ids.has(newPlayer)) await this.callRemote(newPlayer);
         });
 
         this.socket.on("candidate", ({senderId, candidate}) => {
@@ -76,9 +74,6 @@ export class VideoChat extends Component<VideoProps, {}> {
 
             this.socket.emit("call", ({id: user, senderId: this.conId, data: JSON.stringify(offer)}));
             const ids = this.streaming.get_ids();
-            if (ids.length > 1) {
-                this.socket.emit("callMembers", ({id: user, members: [...this.streaming.get_ids()]}));
-            }
         } catch (err) {
             console.log(err);
         }
@@ -88,6 +83,7 @@ export class VideoChat extends Component<VideoProps, {}> {
         const {Streaming, init_panic_hook} = await import("@video-stream");
         init_panic_hook();
         this.streaming = new Streaming(document.querySelector("#firstVideo"));
+        this.feedSocket();
         try {
             await this.streaming.load_video();
         } catch (err) {
