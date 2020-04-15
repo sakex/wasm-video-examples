@@ -25,7 +25,8 @@ class Game {
         });
     };
 
-    constructor() {
+    constructor(id) {
+        this.id = id;
         this.players = [];
         this.deck = null;
         this.smallBlind = 5;
@@ -41,9 +42,10 @@ class Game {
             highestBet: -1,
             pot: [],
             flop: [],
-            river: null,
-            turn: null,
+            river: -1,
+            turn: -1,
             playing: [],
+            started: false
         }
     }
 
@@ -79,6 +81,8 @@ class Game {
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
         //console.log("start");
         this.feedInteractions();
+        this.state.started = true;
+        this.emitState();
         while (this.players.length > 0) {
             await this.playRound();
             return;
