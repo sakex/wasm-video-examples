@@ -252,7 +252,10 @@ class Game {
 
     royalFlush = (values, colors, cards, player) => {
         if (values.slice(9,14).forEach(value => value >= 1)
-            && colors.slice(9,14).forEach(value => value.find(element => element === "spade") === "spade")){
+            && (colors.slice(9,14).forEach(value => value.find(element => element === "spade") === "spade")
+                || colors.slice(9,14).forEach(value => value.find(element => element === "heart") === "heart"))
+                || colors.slice(9,14).forEach(value => value.find(element => element === "diamond") === "diamond")
+                || colors.slice(9,14).forEach(value => value.find(element => element === "club") === "club") ){
             this.state.winner.push(new Winner(player, "Royal flush", cards));
         }
     }
