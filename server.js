@@ -9,8 +9,10 @@ const nextApp = next({dev});
 const nexHandler = nextApp.getRequestHandler();
 
 const {SocketWrapper} = require("./ws/connections");
+const Lobby = require("./ws/poker/lobby");
 
 SocketWrapper.IO = io;
+Lobby.IO = io;
 
 io.on("connection", client => {
     client.on("enterId", inputName => {

@@ -25,8 +25,8 @@ class Game {
         })
     }
 
-    constructor(players) {
-        this.players = players;
+    constructor() {
+        this.players = [];
         this.deck = null;
         this.bets = new Array(this.players.length);
         this.smallBlind = 5;
@@ -43,10 +43,13 @@ class Game {
         };
     }
 
+    addPlayer = player => {
+        this.players.push(player);
+    }
+
     feedInteractions = () => this.players.forEach(player => new Interactions(this, player));
 
     emitState = () => {
-        //console.log(this.state)
         this.players.forEach((player, index) => {
             player.socket.emit("state", this.state, index);
         });
@@ -101,6 +104,8 @@ class Game {
 
     nextPlayer = () => {
         //skip a player that passed by checking if it's bet === -1
+
+        // TODO: Ca ne peut pas marcher tout ca
         const i = 1;
         while (this.bets[this.state.currentPlayer + i] === -1 &&
         (this.state.currentPlayer + i) % this.players.length !== this.state.currentPlayer ) {

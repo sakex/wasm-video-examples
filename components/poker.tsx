@@ -1,10 +1,11 @@
 import React, {Component} from "react";
 import {PokerGame} from "../pokerGame/pokerGame";
 import Styled from "styled-components";
+import {TableData} from "@components/lobby";
 
 const GameParent = Styled.div`
-    width: 800px;
-    height: 600px;
+    width: 1110px;
+    height: 810px;
 `;
 
 interface PokerProps {
@@ -19,7 +20,8 @@ interface PokerState {
     highestBet: number,
     firstHighestPlayer: number,
     bets: number[],
-    raise: number
+    raise: number,
+    tables: TableData[]
 }
 
 export default class extends Component<PokerProps, PokerState> {
@@ -33,7 +35,8 @@ export default class extends Component<PokerProps, PokerState> {
         highestBet: -1,
         firstHighestPlayer: -1,
         bets: [],
-        raise: -1
+        raise: -1,
+        tables: []
     };
 
     constructor(props) {
@@ -50,6 +53,9 @@ export default class extends Component<PokerProps, PokerState> {
             .on("cards", (cards: [[number, string], [number, string]]) => {
                 console.log(cards);
                 this.game.gotCards(...cards);
+            })
+            .on("tables", (tables: TableData[]) => {
+                this.setState({tables})
             })
             .on("state", (state, index) => {
                 this.setState(state);
@@ -72,6 +78,7 @@ export default class extends Component<PokerProps, PokerState> {
                 {/*
                 this are for the lobby
                 */}
+                <GameParent id={"__poker_parent"}/>
                 <button onClick={() => this.socket.emit("join")}>join</button>
                 <button onClick={() => this.socket.emit("leave")}>leave</button>
                 <button onClick={() => this.socket.emit("start")}>start</button>
@@ -94,7 +101,6 @@ export default class extends Component<PokerProps, PokerState> {
                 <div>Your bet is: {this.state.bets[this.state.index]}</div>
                 <div>Highest bet: {this.state.highestBet}</div>
                 <div>Player with highest bet: {this.state.firstHighestPlayer}</div>
-                <GameParent id={"__poker_parent"}/>
             </>
         );
     }
