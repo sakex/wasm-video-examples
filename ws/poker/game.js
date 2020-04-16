@@ -103,7 +103,7 @@ class Game {
             }
         }
         if (inGame === 1) {
-            this.winPot(index);
+            this.winPot([{ player: this.players[index]}])
             return;
         }
         this.state.timerStart = new Date().getTime();
@@ -119,7 +119,7 @@ class Game {
 
     turnTable = () => {
         this.timeout = setTimeout(() => {
-            if(this.state.bets[this.state.currentPlayer] < this.state.highestBet) {
+            if (this.state.bets[this.state.currentPlayer] < this.state.highestBet) {
                 this.fold(this.state.currentPlayer);
             }
             this.playerTurn();
@@ -213,8 +213,19 @@ class Game {
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
     };
 
-    winPot = (index) => {
+    winPot = (arr) => {
         // TODO
+
+        let allPot = 0;
+        for (let i = 0; i < 4; i++) {
+            allPot += this.state.pot[i];
+            this.state.pot[i] = 0;
+        }
+        const arrLength = arr.length;
+        arr.forEach(winner => {
+            return this.state.tokens[winner.player.id] += parseInt(allPot / arrLength);
+        })
+        console.log("winner");
         this.blinds();
     };
 
