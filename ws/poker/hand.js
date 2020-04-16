@@ -66,13 +66,14 @@ class Hand {
 
     compute = (values, colors) => {
         let haveFlush = null;
+        console.log(colors);
         Object.keys(colors).forEach(color => {
             if (colors[color].length >= 5) {
                 haveFlush = colors[color];
             }
         });
         // If you have a flush, it's impossible to have something better at the same time, so we can return early
-        if (haveFlush) {
+        if (haveFlush !== null) {
             const flushValues = haveFlush.map(({value}) => value).sort((a, b) => a - b);
             const isStraight = this.isStraight(flushValues);
             if (isStraight) return ["straightFlush", [isStraight]]; // Straight flush

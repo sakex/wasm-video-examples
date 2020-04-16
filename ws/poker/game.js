@@ -218,6 +218,7 @@ class Game {
         const hands = this.players.filter((player, index) => this.state.playing[index] && player)
             .map((player) => {
                 const cardCp = [...cards, ...player.cards];
+                this.players.forEach(player => player.socket.emit("winners", cardCp));
                 const values = {};
                 const colors = {};
                 cardCp.forEach((card) => {
