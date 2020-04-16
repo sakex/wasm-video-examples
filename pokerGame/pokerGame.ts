@@ -12,9 +12,9 @@ export interface PokerState {
     bets: number[],
     tokens: number[],
     pot: number[],
-    flop: string[],
-    river: string,
-    turn: string,
+    flop: [number, string][],
+    river: [number, string],
+    turn: [number, string],
     playing: boolean[],
     raise: number,
     tables: TableData[],
@@ -31,26 +31,29 @@ export class PokerGame {
     private cards: Card[] = [];
     private index: number;
     private seats: [number, number][];
+    private betsPos: [number, number][];
+    private midPos: [number, number][];
     private timeBar: TimeBar;
+    private midCards: Card[] = [];
     private state: PokerState = new class implements PokerState {
         bets: number[];
         cards: string[];
         currentPlayer: number;
         dealer: number;
         firstHighestPlayer: number;
-        flop: string[];
+        flop: [number, string][] = [];
         highestBet: number;
         index: number;
         playing: boolean[];
         pot: number[];
         raise: number;
-        river: string;
+        river: [number, string];
         started: boolean;
         tables: TableData[];
-        tokens: number[];
-        turn: string;
-        timerStart: number;
         timerEnd: number;
+        timerStart: number;
+        tokens: number[];
+        turn: [number, string];
     };
 
     constructor(private readonly parent: HTMLElement) {
@@ -72,9 +75,13 @@ export class PokerGame {
 
     private setSeatsPos = () => {
         const seats = [[600, 650], [200, 570], [142, 165], [600, 100], [1135, 150], [1150, 630]];
+        const betsPos = [[600, 600], [230, 520], [167, 180], [600, 150], [1085, 150], [1150, 680]];
+        const midPos = [[450, 330], [540, 330], [630, 330], [720, 330], [810, 330]];
         const wScale = this.width / 1376;
         const hScale = this.height / 891;
         this.seats = seats.map((pair: number[]) => [pair[0] * wScale, pair[1] * hScale]);
+        this.betsPos = betsPos.map((pair: number[]) => [pair[0] * wScale, pair[1] * hScale]);
+        this.midPos = midPos.map((pair: number[]) => [pair[0] * wScale, pair[1] * hScale]);
     };
 
     public setIndex = (index: number) => {
@@ -83,13 +90,22 @@ export class PokerGame {
 
     public setState = (state: PokerState) => {
         if (this.state.timerStart !== state.timerStart) {
-            this.changeCurrent(state.timerStart, state.timerEnd);
+            this.changeTimer(state.timerStart, state.timerEnd);
+        }
+        if(this.state.flop.length === 0 && state.flop.length === 3){
+            this.gotFlop(state.flop);
+        }
+        else if(!this.state.river && state.river){
+            this.gotRiverTurn(state.river);
+        }
+        else if(!this.state.turn && state.turn){
+            this.gotRiverTurn(state.turn);
         }
         this.state = state;
         this.render();
     };
 
-    private changeCurrent = (start: number, end: number) => {
+    private changeTimer = (start: number, end: number) => {
         if (this.timeBar) this.timeBar.stop();
         if (start && end) {
             const {length} = this.state.tokens;
@@ -108,10 +124,19 @@ export class PokerGame {
     };
 
     public gotCards = (firstCard: [number, string], secondCard: [number, string]) => {
+        this.midCards = [];
         const c1 = new Card(...firstCard);
         const c2 = new Card(...secondCard);
         this.cards = [c1, c2];
         this.render();
+    };
+
+    private gotFlop = (cards: [number, string][]) => {
+        this.midCards = cards.map(card => new Card(card[0], card[1]));
+    };
+
+    private gotRiverTurn = (card: [number, string]) => {
+        this.midCards.push(new Card(card[0], card[1]));
     };
 
     private render = () => {
@@ -121,6 +146,12 @@ export class PokerGame {
             this.cards[0].draw(this.seats[0][0], this.seats[0][1], 80, 120);
             this.cards[1].draw(this.seats[0][0] + 70, this.seats[0][1], 80, 120);
         }
+        if(this.midCards.length){
+            this.midCards.forEach((card, index) => {
+                const [x, y] = this.midPos[index];
+                card.draw(x, y, 80, 120);
+            });
+        }
         const {length} = this.state.tokens;
         this.ctx.fillStyle = "gold";
         this.ctx.font = "30px Georgia";
@@ -128,6 +159,10 @@ export class PokerGame {
             const pos = index >= this.index ? (index - this.index) : (length - this.index + index);
             const [x, y] = this.seats[pos];
             this.ctx.fillText(`$ ${token}`, x, y);
+            if (this.state.bets[index]) {
+                const [bX, bY] = this.betsPos[pos];
+                this.ctx.fillText(`$ ${this.state.bets[index]}`, bX, bY);
+            }
         });
         this.ctx.closePath();
     };

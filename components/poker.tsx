@@ -130,6 +130,7 @@ export default class extends Component<PokerProps, StartedState> {
                 this.game.gotCards(...cards);
             })
             .on("state", (state: PokerState, index) => {
+                console.log(state);
                 const newState: StartedState = {started: state.started, highestBet: state.highestBet};
                 if (newState.highestBet != this.state.highestBet) {
                     newState.bet = newState.highestBet;
@@ -138,7 +139,6 @@ export default class extends Component<PokerProps, StartedState> {
                 this.game.setIndex(index);
                 this.game.setState(state);
                 this.tokens = state.tokens[index];
-                console.log(state);
             });
     };
 

@@ -38,8 +38,8 @@ class Game {
             highestBet: -1,
             pot: [],
             flop: [],
-            river: -1,
-            turn: -1,
+            river: null,
+            turn: null,
             playing: [],
             started: false,
             winner: [],
@@ -148,6 +148,9 @@ class Game {
         const bigPos = (this.state.dealer + 2) % this.players.length;
         this.pay(smallPos, this.smallBlind);
         this.pay(bigPos, this.bigBlind);
+        this.state.flop = [];
+        this.state.river = null;
+        this.state.turn = null;
         this.distributeCards();
         this.nextFunc = this.flop;
         this.turnTable();
