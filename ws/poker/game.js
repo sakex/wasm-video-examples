@@ -222,10 +222,11 @@ class Game {
                 const values = {};
                 const colors = {};
                 cardCp.forEach((card) => {
-                    if (card.value in values) values[card.value]++;
-                    else values[card.value] = 1;
-                    if (card.color in colors) colors[card.color].push(card);
-                    else colors[card.color] = [card];
+                    const [value, color] = card;
+                    if (value in values) values[value]++;
+                    else values[value] = 1;
+                    if (color in colors) colors[color].push(card);
+                    else colors[color] = [card];
                 });
                 console.log(values);
                 console.log(colors);
