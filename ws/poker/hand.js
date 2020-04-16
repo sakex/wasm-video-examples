@@ -79,7 +79,7 @@ class Hand {
             if (isStraight) return ["straightFlush", [isStraight]]; // Straight flush
             return ["flush", [flushValues[flushValues.length - 1]]]; // FLUSH
         }
-        const valuesSorted = Object.keys(values).map(parseInt).sort((a, b) => a - b);
+        const valuesSorted = Object.keys(values).sort((a, b) => a - b).map(parseInt);
         const isStraight = this.isStraight(valuesSorted);
         if (isStraight) return ["straight", isStraight];
         const len = valuesSorted.length;
