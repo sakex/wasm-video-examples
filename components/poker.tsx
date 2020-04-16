@@ -138,6 +138,7 @@ export default class extends Component<PokerProps, StartedState> {
                 this.game.setIndex(index);
                 this.game.setState(state);
                 this.tokens = state.tokens[index];
+                console.log(state);
             });
     };
 
