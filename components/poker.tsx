@@ -131,6 +131,7 @@ export default class extends Component<PokerProps, StartedState> {
                 console.log(cards);
                 this.game.gotCards(...cards);
             })
+            .on("winners", winners => console.log(winners))
             .on("state", (state: PokerState, index) => {
                 console.log(state);
                 const newState: StartedState = {
@@ -188,7 +189,7 @@ export default class extends Component<PokerProps, StartedState> {
                         <StartButton onClick={() => this.socket.emit("start")}>start</StartButton>
                     </> :
                     <>
-                        <CheckButton onClick={this.check} disabled={this.state.highestBet === 0}>Check</CheckButton>
+                        <CheckButton onClick={this.check} disabled={this.state.highestBet === this.state.currentBet}>Check</CheckButton>
                         {this.tokens > this.state.highestBet ?
                             <CallButton onClick={this.call}>Call</CallButton> :
                             <CallButton onClick={this.allIn}>All in</CallButton>

@@ -92,13 +92,11 @@ export class PokerGame {
         if (this.state.timerStart !== state.timerStart) {
             this.changeTimer(state.timerStart, state.timerEnd);
         }
-        if(this.state.flop.length === 0 && state.flop.length === 3){
+        if (this.state.flop.length === 0 && state.flop.length === 3) {
             this.gotFlop(state.flop);
-        }
-        else if(!this.state.river && state.river){
+        } else if (!this.state.river && state.river) {
             this.gotRiverTurn(state.river);
-        }
-        else if(!this.state.turn && state.turn){
+        } else if (!this.state.turn && state.turn) {
             this.gotRiverTurn(state.turn);
         }
         this.state = state;
@@ -147,7 +145,7 @@ export class PokerGame {
             this.cards[0].draw(this.seats[0][0], this.seats[0][1], 80, 120);
             this.cards[1].draw(this.seats[0][0] + 70, this.seats[0][1], 80, 120);
         }
-        if(this.midCards.length){
+        if (this.midCards.length) {
             this.midCards.forEach((card, index) => {
                 const [x, y] = this.midPos[index];
                 card.draw(x, y, 80, 120);

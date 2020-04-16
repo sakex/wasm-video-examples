@@ -71,18 +71,12 @@ class Game {
         });
     };
 
-    start = async () => {
+    start = () => {
         this.feedInteractions();
-        this.players.forEach(_ => {
-            this.state.bets.push(0);
-            this.state.tokens.push(TIMER);
-            this.state.playing.push(true);
-        });
         this.state.dealer = Math.round(Math.random() * this.players.length);
         this.state.firstHighestPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
         this.state.started = true;
-        this.emitState();
         this.blinds();
     };
 
@@ -155,6 +149,14 @@ class Game {
     };
 
     blinds = () => {
+        this.state.bets = [];
+        this.state.tokens = [];
+        this.state.playing = [];
+        this.players.forEach(_ => {
+            this.state.bets.push(0);
+            this.state.tokens.push(1000);
+            this.state.playing.push(true);
+        });
         this.resetBets();
         this.dealerChange();
         const smallPos = (this.state.dealer + 1) % this.players.length;
@@ -225,6 +227,7 @@ class Game {
             });
 
         const winners = Hand.compareHands(hands);
+        this.players.forEach(player => player.socket.emit("winners", winners));
         this.winPot(winners);
     };
 
@@ -274,11 +277,8 @@ class Game {
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
     };
 
-    // TODO: check... all in one function called with different params
-
     fold = (index) => {
         if (index === this.state.currentPlayer) {
-            console.log("fold");
             this.state.playing[this.state.currentPlayer] = false;
             this.playerTurn();
         }

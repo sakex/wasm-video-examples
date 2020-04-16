@@ -1,7 +1,7 @@
 const Game = require("./game");
 
 class Lobby {
-    static maxPlayer = 9;
+    static maxPlayer = 6;
     static games = {};
     static lastGame = 0;
 
@@ -51,6 +51,7 @@ class Lobby {
             .on("start", async () => {
                 try {
                     await this.game.start();
+                    delete Lobby.games[this.game.id];
                     this.emitTables();
                 } catch (e) {
                     console.error(e);

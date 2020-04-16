@@ -12,6 +12,7 @@ export class TimeBar {
 
     private start = () => {
         const render = () => {
+            if (this.stopped) return;
             const len = ((this.to - new Date().getTime()) / (this.to - this.from)) * 150;
             if (len <= 0) {
                 this.stop();
@@ -23,9 +24,7 @@ export class TimeBar {
             this.ctx.fillRect(this.x, this.y + 140, 150, 10);
             this.ctx.fillStyle = "green";
             this.ctx.fillRect(this.x, this.y + 140, 150 - len, 10);
-            if (!this.stopped) {
-                requestAnimationFrame(render);
-            }
+            requestAnimationFrame(render);
         };
         requestAnimationFrame(render);
     };

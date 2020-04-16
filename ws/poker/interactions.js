@@ -13,7 +13,6 @@ class Interactions {
     feedSocket = () => {
 
         this.socket.on("raise", bet => {
-            console.log(bet)
             if(this.game.pay(this.index, bet)){
                 this.game.emitState();
                 this.game.playerTurn();
