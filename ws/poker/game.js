@@ -105,8 +105,8 @@ class Game {
             this.winPot([{ player: this.players[index]}])
             return;
         }
+        this.state.currentPlayer = this.findNextPlayer();
         if (this.state.currentPlayer !== this.state.firstHighestPlayer) {
-            this.state.currentPlayer = this.findNextPlayer();
             this.turnTable();
         } else {
             this.nextFunc();
@@ -194,7 +194,7 @@ class Game {
     turn = () => {
         this.resetBets();
         this.state.turn = this.deck.pop().serialize();
-        this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
+        this.state.currentPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = this.findNextPlayer();
         this.state.firstHighestPlayer = this.state.currentPlayer
         this.emitState();
