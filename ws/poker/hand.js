@@ -52,6 +52,7 @@ class Hand {
 
     isStraight = (values) => {
         // Values should be sorted
+        console.log(values);
         let streak = 1;
         for (let i = 1; i < values.length; ++i) {
             if (values[i] === values[i - 1] + 1) streak++;
@@ -78,7 +79,7 @@ class Hand {
             if (isStraight) return ["straightFlush", [isStraight]]; // Straight flush
             return ["flush", [flushValues[flushValues.length - 1]]]; // FLUSH
         }
-        const valuesSorted = Object.keys(values).sort((a, b) => a - b);
+        const valuesSorted = Object.keys(values).map(parseInt).sort((a, b) => a - b);
         const isStraight = this.isStraight(valuesSorted);
         if (isStraight) return ["straight", isStraight];
         const len = valuesSorted.length;
