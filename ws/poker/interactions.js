@@ -13,8 +13,11 @@ class Interactions {
 
         this.socket.on("raise", bet => {
             this.game.pay(this.index, bet);
+        }).on("fold", () => {
+            this.game.fold(this.index);
         });
     };
 
 }
+
 module.exports = Interactions;

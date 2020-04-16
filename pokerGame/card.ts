@@ -39,7 +39,7 @@ export class Card implements Sprite {
         },
         12: {
             heart: {x: 2420, y: 2064},
-            diamond: {x: 740, y: 2044},
+            diamond: {x: 740, y: 2084},
             club: {x: 1832, y: 2064},
             spade: {x: 1288, y: 2054}
         },

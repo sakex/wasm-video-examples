@@ -1,5 +1,6 @@
 import {Card} from "./card";
 import {TableData} from "@components/lobby";
+import {TimeBar} from "./timeBar";
 
 export interface PokerState {
     index: number,
@@ -17,7 +18,9 @@ export interface PokerState {
     playing: boolean[],
     raise: number,
     tables: TableData[],
-    started: boolean
+    started: boolean,
+    timerStart: number,
+    timerEnd: number,
 }
 
 export class PokerGame {
@@ -28,6 +31,7 @@ export class PokerGame {
     private cards: Card[] = [];
     private index: number;
     private seats: [number, number][];
+    private timeBar: TimeBar;
     private state: PokerState = new class implements PokerState {
         bets: number[];
         cards: string[];
@@ -45,6 +49,8 @@ export class PokerGame {
         tables: TableData[];
         tokens: number[];
         turn: string;
+        timerStart: number;
+        timerEnd: number;
     };
 
     constructor(private readonly parent: HTMLElement) {
@@ -76,8 +82,21 @@ export class PokerGame {
     };
 
     public setState = (state: PokerState) => {
+        if (this.state.timerStart !== state.timerStart) {
+            this.changeCurrent(state.timerStart, state.timerEnd);
+        }
         this.state = state;
         this.render();
+    };
+
+    private changeCurrent = (start: number, end: number) => {
+        if (this.timeBar) this.timeBar.stop();
+        if (start && end) {
+            const {length} = this.state.tokens;
+            const pos = this.state.currentPlayer >= this.index ? (this.state.currentPlayer - this.index) : (length - this.index + this.state.currentPlayer);
+            const [x, y] = this.seats[pos];
+            this.timeBar = new TimeBar(start, end, x, y, this.ctx);
+        }
     };
 
     private onResize = () => {

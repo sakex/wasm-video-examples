@@ -43,6 +43,8 @@ class Game {
             playing: [],
             started: false,
             winner: [],
+            timerStart: null,
+            timerEnd: null
         };
     }
 
@@ -105,6 +107,9 @@ class Game {
             return;
         }
         this.state.currentPlayer = this.findNextPlayer();
+        this.state.timerStart = new Date().getTime();
+        this.state.timerEnd = this.state.timerStart + 10000;
+        this.emitState();
         if (this.state.currentPlayer !== this.state.firstHighestPlayer) {
             this.turnTable();
         } else {
@@ -113,7 +118,12 @@ class Game {
     };
 
     turnTable = () => {
-        this.timeout = setTimeout(this.playerTurn, 10000);
+        this.timeout = setTimeout(() => {
+            if(this.state.bets[this.state.currentPlayer] < this.state.highestBet) {
+                this.fold(this.state.currentPlayer);
+            }
+            this.playerTurn();
+        }, 10000);
     };
 
     pay = (index, amount) => {
@@ -174,8 +184,8 @@ class Game {
         const cards = [...this.state.flop, this.state.river, this.state.turn];
 
         const hands = this.players.filter((player, index) => this.state.playing[index] && player)
-            .map((player, index) => {
-                const cardCp = [...cards, ...player[index].cards];
+            .map((player) => {
+                const cardCp = [...cards, ...player.cards];
                 const values = {};
                 const colors = {};
                 cardCp.forEach((card) => {
@@ -267,8 +277,8 @@ class Game {
         }
     };
 
-    fold = (player) => {
-        if (this.players.indexOf(player) === this.state.currentPlayer) {
+    fold = (index) => {
+        if (index === this.state.currentPlayer) {
             console.log("pass is valid");
             this.state.playing[this.state.currentPlayer] = false;
             this.playerTurn();
