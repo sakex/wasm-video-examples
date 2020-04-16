@@ -121,6 +121,7 @@ export class PokerGame {
         this.canvas.width = this.width;
         this.canvas.height = this.height;
         this.setSeatsPos();
+        this.render();
     };
 
     public gotCards = (firstCard: [number, string], secondCard: [number, string]) => {
