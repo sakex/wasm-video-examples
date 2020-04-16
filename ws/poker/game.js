@@ -87,7 +87,7 @@ class Game {
     findNextPlayer = () => {
         let it = this.state.currentPlayer + 1;
         for (; it < this.state.playing.length; ++it) if (this.state.playing) return it;
-        for (it = 0; it < this.state.currentPlayer; ++it) if (this.state.playing) return it;
+        for (it = 0; it <= this.state.currentPlayer; ++it) if (this.state.playing) return it;
     };
 
     playerTurn = () => {
