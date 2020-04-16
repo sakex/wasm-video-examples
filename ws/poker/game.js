@@ -58,7 +58,7 @@ class Game {
     };
 
     feedInteractions = () => {
-        this.players.forEach(player => new Interactions(this, player));
+        this.players.forEach((player, index) => new Interactions(this, player, index));
     };
 
     emitState = () => {
@@ -117,7 +117,7 @@ class Game {
     };
 
     pay = (index, amount) => {
-        const totalBet = amount + this.state.bets.tokens[index];
+        const totalBet = amount + this.state.bets[index];
         if (amount === this.state.tokens[index] ||
             totalBet === this.state.highestBet ||
             totalBet > this.state.highestBet + this.smallBlind) {
@@ -146,7 +146,7 @@ class Game {
     flop = () => {
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
         this.pot(0);
-        for (let i = 0; i < 3; ++i) this.state.flop(this.deck.pop().serialize());
+        for (let i = 0; i < 3; ++i) this.state.flop.push(this.deck.pop().serialize());
         this.emitState();
         this.nextFunc = this.river;
         this.turnTable();
@@ -174,7 +174,7 @@ class Game {
         const cards = [...this.state.flop, this.state.river, this.state.turn];
 
         const hands = this.players.filter((player, index) => this.state.playing[index] && player)
-            .map((player) => {
+            .map((player, index) => {
                 const cardCp = [...cards, ...player[index].cards];
                 const values = {};
                 const colors = {};
