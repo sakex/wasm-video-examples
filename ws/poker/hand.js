@@ -46,7 +46,6 @@ class Hand {
     constructor(values, colors, player) {
         this.player = player;
         const computed = this.compute(values, colors);
-        console.log(computed);
         this.hand = computed[0];
         this.highest = computed[1];
     }
