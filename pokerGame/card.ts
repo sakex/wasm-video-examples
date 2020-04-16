@@ -25,9 +25,9 @@ export class Card implements Sprite {
     private static image: HTMLImageElement;
     private static genericPos: GenericPos = {
         heart: {x: 185, y: 570},
-        diamond: {x: 170, y: 1325},
+        diamond: {x: 180, y: 1320},
         club: {x: 737, y: 570},
-        spade: {x: 1264, y: 600}
+        spade: {x: 1264, y: 580}
     };
 
     private static headPos: HeadPos = {
@@ -39,7 +39,7 @@ export class Card implements Sprite {
         },
         12: {
             heart: {x: 2420, y: 2064},
-            diamond: {x: 740, y: 2064},
+            diamond: {x: 740, y: 2044},
             club: {x: 1832, y: 2064},
             spade: {x: 1288, y: 2054}
         },

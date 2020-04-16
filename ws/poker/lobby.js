@@ -13,9 +13,10 @@ class Lobby {
     }
 
     emitTables = () => {
-        Lobby.IO.emit("tables", Object.keys(Lobby.games).map(key => {
-            return {id: key, players: Lobby.games[key].players.length};
-        }));
+        Lobby.IO.emit("tables", Object.keys(Lobby.games)
+            .filter(key => !Lobby.games[key].started).map(key => {
+                return {id: key, players: Lobby.games[key].players.length};
+            }));
     };
 
     feedSocket = () => {
@@ -50,6 +51,7 @@ class Lobby {
             .on("start", async () => {
                 try {
                     await this.game.start();
+                    this.emitTables();
                 } catch (e) {
                     console.error(e);
                 }
@@ -57,13 +59,13 @@ class Lobby {
             .on("leave", async () => {
                 const index = this.game.players.indexOf(this);
                 this.game.players.splice(index, 1);
-                if(this.game.players.length === 0) {
+                if (this.game.players.length === 0) {
                     delete Lobby.games[this.game.id];
                 }
                 this.game = undefined;
                 this.socket.emit("joined", false);
                 this.emitTables();
-        });
+            });
 
     };
 }
