@@ -2,6 +2,8 @@ const Card = require("./card");
 const Interactions = require("./interactions");
 const Hand = require("./hand");
 
+const TIMER = 20 * 1000;
+
 const shuffleArray = (arr) => {
     let currentIndex = arr.length, temporaryValue, randomIndex;
 
@@ -56,7 +58,7 @@ class Game {
                     player.socket.emit("newPlayer", newPlayer.id);
                 }
             });
-        }, 10000);
+        }, TIMER);
     };
 
     feedInteractions = () => {
@@ -73,7 +75,7 @@ class Game {
         this.feedInteractions();
         this.players.forEach(_ => {
             this.state.bets.push(0);
-            this.state.tokens.push(10000);
+            this.state.tokens.push(TIMER);
             this.state.playing.push(true);
         });
         this.state.dealer = Math.round(Math.random() * this.players.length);
@@ -115,14 +117,14 @@ class Game {
 
     turnTable = () => {
         this.state.timerStart = new Date().getTime();
-        this.state.timerEnd = this.state.timerStart + 10000;
+        this.state.timerEnd = this.state.timerStart + TIMER;
         this.emitState();
         this.timeout = setTimeout(() => {
             if (this.state.bets[this.state.currentPlayer] < this.state.highestBet) {
                 this.fold(this.state.currentPlayer);
             }
             this.playerTurn();
-        }, 10000);
+        }, TIMER);
     };
 
     pay = (index, amount) => {
@@ -139,6 +141,7 @@ class Game {
                     this.state.highestBet = totalBet;
                     this.state.firstHighestPlayer = index;
                 }
+                this.emitState();
                 return true;
             } else {
                 this.players[index].socket.emit("err", "Amount raised too low");
