@@ -169,6 +169,7 @@ class Game {
         this.state.currentPlayer = this.findNextPlayer();
         this.state.firstHighestPlayer = this.state.currentPlayer
         this.distributeCards();
+        this.emitState();
         this.nextFunc = this.flop;
         this.turnTable();
     };
