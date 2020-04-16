@@ -45,9 +45,10 @@ class Hand {
 
     constructor(values, colors, player) {
         this.player = player;
-        const [hand, highest] = this.compute(values, colors);
-        this.hand = hand;
-        this.highest = highest;
+        const computed = this.compute(values, colors);
+        console.log(computed);
+        this.hand = computed[0];
+        this.highest = computed[1];
     }
 
     isStraight = (values) => {
