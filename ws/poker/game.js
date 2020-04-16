@@ -72,7 +72,7 @@ class Game {
     };
 
     start = () => {
-        this.state.tokens.push(1000);
+        this.players.forEach(_ => this.state.tokens.push(1000));
         this.feedInteractions();
         this.state.dealer = Math.round(Math.random() * this.players.length);
         this.state.firstHighestPlayer = (this.state.dealer + 2) % this.players.length;
