@@ -130,7 +130,7 @@ class Game {
 
     pay = (index, amount, blind = false) => {
         try{
-            if(blind || index !== this.state.currentPlayer) return false;
+            if(!blind && index !== this.state.currentPlayer) return false;
             const totalBet = amount + this.state.bets[index];
             if (amount === this.state.tokens[index] ||
                 totalBet === this.state.highestBet ||
