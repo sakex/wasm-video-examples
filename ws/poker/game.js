@@ -217,6 +217,7 @@ class Game {
             arr.push(this.deck.pop().serialize());
         });
         this.players.forEach((player, index) => {
+            player.cards = toSend[index];
             player.socket.emit("cards", toSend[index]);
         });
     };
