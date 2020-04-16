@@ -106,11 +106,11 @@ class Game {
             this.winPot(index);
             return;
         }
-        this.state.currentPlayer = this.findNextPlayer();
         this.state.timerStart = new Date().getTime();
         this.state.timerEnd = this.state.timerStart + 10000;
         this.emitState();
         if (this.state.currentPlayer !== this.state.firstHighestPlayer) {
+            this.state.currentPlayer = this.findNextPlayer();
             this.turnTable();
         } else {
             this.nextFunc();
@@ -140,6 +140,7 @@ class Game {
         } else {
             this.players[index].socket.emit("err", "Amount raised too low");
         }
+        this.emitState();
     };
 
     blinds = () => {
