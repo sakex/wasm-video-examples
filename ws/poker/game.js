@@ -99,7 +99,7 @@ class Game {
             }
         }
         if (inGame === 1) {
-            this.winPot([{ player: this.players[index]}])
+            this.winPot([{player: this.players[index]}]);
             return;
         }
         this.state.currentPlayer = this.findNextPlayer();
@@ -124,8 +124,8 @@ class Game {
     };
 
     pay = (index, amount, blind = false) => {
-        try{
-            if(!blind && index !== this.state.currentPlayer) return false;
+        try {
+            if (!blind && index !== this.state.currentPlayer) return false;
             const totalBet = amount + this.state.bets[index];
             if (amount === this.state.tokens[index] ||
                 totalBet === this.state.highestBet ||
@@ -143,8 +143,7 @@ class Game {
                 this.players[index].socket.emit("err", "Amount raised too low");
                 return false;
             }
-        }
-        catch(err) {
+        } catch (err) {
             console.error(err);
         }
     };
@@ -168,7 +167,7 @@ class Game {
         this.pay(bigPos, this.bigBlind, true);
         this.state.currentPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = this.findNextPlayer();
-        this.state.firstHighestPlayer = this.state.currentPlayer
+        this.state.firstHighestPlayer = this.state.currentPlayer;
         this.distributeCards();
         this.emitState();
         this.nextFunc = this.flop;
@@ -179,7 +178,7 @@ class Game {
         this.resetBets();
         this.state.currentPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = this.findNextPlayer();
-        this.state.firstHighestPlayer = this.state.currentPlayer
+        this.state.firstHighestPlayer = this.state.currentPlayer;
         for (let i = 0; i < 3; ++i) this.state.flop.push(this.deck.pop().serialize());
         this.emitState();
         this.nextFunc = this.river;
@@ -190,7 +189,7 @@ class Game {
         this.resetBets();
         this.state.currentPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = this.findNextPlayer();
-        this.state.firstHighestPlayer = this.state.currentPlayer
+        this.state.firstHighestPlayer = this.state.currentPlayer;
         this.state.river = this.deck.pop().serialize();
         this.emitState();
         this.nextFunc = this.turn;
@@ -198,17 +197,22 @@ class Game {
     };
 
     turn = () => {
+        this.players.forEach(player => player.socket.emit("winners", "IN TURN"));
+
         this.resetBets();
         this.state.turn = this.deck.pop().serialize();
         this.state.currentPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = this.findNextPlayer();
-        this.state.firstHighestPlayer = this.state.currentPlayer
+        this.state.firstHighestPlayer = this.state.currentPlayer;
         this.emitState();
+
+        this.players.forEach(player => player.socket.emit("winners", 1));
         this.nextFunc = this.decideWinner;
         this.turnTable();
     };
 
-    decideWinner = async () => {
+    decideWinner = () => {
+        this.players.forEach(player => player.socket.emit("winners", "in decide"));
         const cards = [...this.state.flop, this.state.river, this.state.turn];
 
         const hands = this.players.filter((player, index) => this.state.playing[index] && player)
@@ -225,6 +229,7 @@ class Game {
                 return new Hand(values, colors);
             });
 
+        this.players.forEach(player => player.socket.emit("winners", hands));
         const winners = Hand.compareHands(hands);
         console.log(winners);
         this.players.forEach(player => player.socket.emit("winners", winners));
@@ -233,15 +238,15 @@ class Game {
 
     resetBets = () => {
         this.state.highestBet = 0;
-        for(let i = 0; i < this.state.bets.length; ++i) this.state.bets[i] = 0;
-    }
+        for (let i = 0; i < this.state.bets.length; ++i) this.state.bets[i] = 0;
+    };
 
     winPot = (arr) => {
         const arrLength = arr.length;
         const amount = Math.round(this.state.pot / arrLength);
         arr.forEach(winner => {
             this.state.tokens[winner.player.index] += amount;
-        })
+        });
         this.state.pot = 0;
         this.blinds();
     };
