@@ -1,4 +1,3 @@
-import {GenericSprite} from "./sprite";
 import {Card} from "./card";
 import {TableData} from "@components/lobby";
 
@@ -70,16 +69,16 @@ export class PokerGame {
         const wScale = this.width / 1376;
         const hScale = this.height / 891;
         this.seats = seats.map((pair: number[]) => [pair[0] * wScale, pair[1] * hScale]);
-    }
+    };
 
     public setIndex = (index: number) => {
         this.index = index;
-    }
+    };
 
     public setState = (state: PokerState) => {
         this.state = state;
         this.render();
-    }
+    };
 
     private onResize = () => {
         this.width = this.parent.offsetWidth;
@@ -93,17 +92,25 @@ export class PokerGame {
         const c1 = new Card(...firstCard);
         const c2 = new Card(...secondCard);
         this.cards = [c1, c2];
-        this.ctx.clearRect(this.seats[0][0], this.seats[0][1], 151, 120);
-        this.ctx.beginPath();
-        if(this.cards.length){
-            this.cards[0].draw(this.seats[0][0], this.seats[0][1], 80, 120);
-            this.cards[1].draw(this.seats[0][0] + 70, this.seats[0][1], 80, 120);
-        }
-        this.ctx.closePath();
+        this.render();
     };
 
     private render = () => {
-
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        this.ctx.beginPath();
+        if (this.cards.length) {
+            this.cards[0].draw(this.seats[0][0], this.seats[0][1], 80, 120);
+            this.cards[1].draw(this.seats[0][0] + 70, this.seats[0][1], 80, 120);
+        }
+        const {length} = this.state.tokens;
+        this.ctx.fillStyle = "gold";
+        this.ctx.font = "30px Georgia";
+        this.state.tokens.forEach((token, index) => {
+            const pos = index >= this.index ? (index - this.index) : (length - this.index + index);
+            const [x, y] = this.seats[pos];
+            this.ctx.fillText(`$ ${token}`, x, y);
+        });
+        this.ctx.closePath();
     };
 
 }
