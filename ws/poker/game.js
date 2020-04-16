@@ -1,6 +1,6 @@
 const Card = require("./card");
-const Winner = require("./winner");
 const Interactions = require("./interactions");
+const Hand = require("./hand");
 
 const shuffleArray = (arr) => {
     let currentIndex = arr.length, temporaryValue, randomIndex;
@@ -18,20 +18,15 @@ const shuffleArray = (arr) => {
 };
 
 class Game {
-    static awaitTimer = (timer) => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(timer);
-            }, timer);
-        });
-    };
-
     constructor(id) {
         this.id = id;
         this.players = [];
         this.deck = null;
         this.smallBlind = 5;
         this.bigBlind = 10;
+
+        this.nextFunc = null;
+        this.timeout = null;
 
 
         this.state = {
@@ -48,7 +43,7 @@ class Game {
             playing: [],
             started: false,
             winner: [],
-        }
+        };
     }
 
     addPlayer = newPlayer => {
@@ -73,6 +68,7 @@ class Game {
     };
 
     start = async () => {
+        this.feedInteractions();
         this.players.forEach(_ => {
             this.state.bets.push(0);
             this.state.tokens.push(10000);
@@ -82,7 +78,6 @@ class Game {
         this.state.firstHighestPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
         //console.log("start");
-        this.feedInteractions();
         this.state.started = true;
         this.emitState();
         while (this.players.length > 0) {
@@ -101,7 +96,7 @@ class Game {
         this.state.dealer = (this.state.dealer + 1) % this.players.length;
         this.state.firstHighestPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
-    }
+    };
 
     // TODO: check... all in one function called with different params
     check = (player) => {
@@ -116,7 +111,7 @@ class Game {
         if (this.players.indexOf(player) === this.state.currentPlayer &&
             this.state.bets[this.state.currentPlayer] < this.state.highestBet &&
             this.state.highestBet - this.state.bets[this.state.currentPlayer] <= this.state.tokens[this.state.currentPlayer]) {
-            console.log("follow is valid")
+            console.log("follow is valid");
             this.state.bets[this.state.currentPlayer] = this.state.highestBet;
             this.state.tokens[this.state.currentPlayer] -= (this.state.highestBet + this.state.bets[this.state.currentPlayer]);
             this.nextPlayer();
@@ -127,7 +122,7 @@ class Game {
         if (this.players.indexOf(player) === this.state.currentPlayer &&
             raise + this.state.bets[this.state.currentPlayer] >= this.state.highestBet &&
             raise <= this.state.tokens[this.state.currentPlayer]) {
-            console.log("raise is valid")
+            console.log("raise is valid");
             this.state.bets[this.state.currentPlayer] += raise;
             this.state.tokens[this.state.currentPlayer] -= raise;
             this.state.highestBet = this.state.bets[this.state.currentPlayer];
@@ -138,7 +133,7 @@ class Game {
 
     fold = (player) => {
         if (this.players.indexOf(player) === this.state.currentPlayer) {
-            console.log("pass is valid")
+            console.log("pass is valid");
             this.state.playing[this.state.currentPlayer] = false;
             this.nextPlayer();
         }
@@ -181,21 +176,22 @@ class Game {
         this.state.bets.fill(0);
         this.state.highestBet = 0;
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
-    }
+    };
 
     flop = async () => {
-        this.state.flop.push([this.deck.pop().serialize()]);
-        this.state.flop.push([this.deck.pop().serialize()]);
-        this.state.flop.push([this.deck.pop().serialize()]);
-    }
+        for (let i = 0; i < 3; ++i) this.state.flop(this.deck.pop().serialize());
+        this.emitState();
+    };
 
     river = async () => {
         this.state.river = this.deck.pop().serialize();
-    }
+        this.emitState();
+    };
 
     turn = async () => {
         this.state.turn = this.deck.pop().serialize();
-    }
+        this.emitState();
+    };
 
     checkValidPlayers = async () => {
         this.players.forEach((player, index) => {
@@ -203,89 +199,28 @@ class Game {
                 this.players.delete(player);
             }
         });
-    }
+    };
 
     decideWinner = async () => {
-        let cards = [];
-        const values = {};
-        const colors = {};
-        cards.push(this.state.flop[0]);
-        cards.push(this.state.flop[1]);
-        cards.push(this.state.flop[2]);
-        cards.push(this.state.river);
-        cards.push(this.state.turn);
+        const cards = [...this.state.flop, this.state.river, this.state.turn];
 
-        this.players.forEach((player, index) => {
-            cards.push(this.players[index].cards[0]);
-            cards.push(this.players[index].cards[1]);
-
-            cards.forEach((card) => {
-                if (card.value in values) {
-                    colors[card.value][values[card.value]] = card.color;
-                    values[card.value]++;
-                }
-                else {
-                    values[card.value] = 1;
-                    colors[card.value][0] = card.color;
-                }
+        const hands = this.players.filter((player, index) => this.state.playing[index] && player)
+            .map((player) => {
+                const cardCp = [...cards, ...player[index].cards];
+                const values = {};
+                const colors = {};
+                cardCp.forEach((card) => {
+                    if (card.value in values) values[card.value]++;
+                    else values[card.value] = 1;
+                    if (card.color in colors) colors[card.color].push(card);
+                    else colors[card.color] = [card];
+                });
+                return new Hand(values, colors);
             });
 
-            //here call all the functions with values and colors as input
-            this.royalFlush(values, colors, cards, player);
-            this.straightFLush(values, colors, cards, player);
-            this.fourOfKind(values, colors, cards, player);
-            this.fullHouse(values, colors, cards, player);
-            this.regularFlush(values, colors, cards, player);
-            this.royalFlush(values, colors, cards, player);
-            this.regularStraight(values, colors, cards, player);
-            this.threeOfKind(values, colors, cards, player);
-            this.twoPair(values, colors, cards, player);
-            this.regularPair(values, colors, cards, player);
-            this.highCard(values, colors, cards, player);
+        return Hand.compareHands(hands);
+    };
 
-            //this.state.winner.push(new Winner(player, "test", cards));
-
-            cards.pop();
-            cards.pop();
-        });
-    }
-
-    royalFlush = (values, colors, cards, player) => {
-        if (values.slice(9,14).forEach(value => value >= 1)
-            && (colors.slice(9,14).forEach(value => value.find(element => element === "spade") === "spade")
-                || colors.slice(9,14).forEach(value => value.find(element => element === "heart") === "heart"))
-                || colors.slice(9,14).forEach(value => value.find(element => element === "diamond") === "diamond")
-                || colors.slice(9,14).forEach(value => value.find(element => element === "club") === "club") ){
-            this.state.winner.push(new Winner(player, "Royal flush", cards));
-        }
-    }
-
-    straightFLush = (values, colors, cards, player) => {
-    }
-
-    fourOfKind = (values, colors, cards, player) => {
-    }
-
-    fullHouse = (values, colors, cards, player) => {
-    }
-
-    regularFlush = (values, colors, cards, player) => {
-    }
-
-    regularStraight = (values, colors, cards, player) => {
-    }
-
-    threeOfKind = (values, colors, cards, player) => {
-    }
-
-    twoPair = (values, colors, cards, player) => {
-    }
-
-    regularPair = (values, colors, cards, player) => {
-    }
-
-    highCard = (values, colors, cards, player) => {
-    }
 
     playRound = async () => {
         await this.blinds();
