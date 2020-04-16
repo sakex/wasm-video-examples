@@ -35,7 +35,7 @@ class Game {
             currentPlayer: -1,
             bets: [],
             tokens: [],
-            highestBet: -1,
+            highestBet: 0,
             pot: [],
             flop: [],
             river: null,
@@ -130,7 +130,7 @@ class Game {
         const totalBet = amount + this.state.bets[index];
         if (amount === this.state.tokens[index] ||
             totalBet === this.state.highestBet ||
-            totalBet > this.state.highestBet + this.smallBlind) {
+            totalBet >= this.state.highestBet + this.smallBlind) {
             this.state.bets[index] += amount;
             this.state.tokens[index] -= amount;
             if (totalBet > this.state.highestBet) {
@@ -147,11 +147,12 @@ class Game {
         this.dealerChange();
         const smallPos = (this.state.dealer + 1) % this.players.length;
         const bigPos = (this.state.dealer + 2) % this.players.length;
-        this.pay(smallPos, this.smallBlind);
-        this.pay(bigPos, this.bigBlind);
         this.state.flop = [];
         this.state.river = null;
         this.state.turn = null;
+        this.state.highestBet = 0;
+        this.pay(smallPos, this.smallBlind);
+        this.pay(bigPos, this.bigBlind);
         this.distributeCards();
         this.nextFunc = this.flop;
         this.turnTable();
@@ -283,7 +284,6 @@ class Game {
 
     fold = (index) => {
         if (index === this.state.currentPlayer) {
-            console.log("pass is valid");
             this.state.playing[this.state.currentPlayer] = false;
             this.playerTurn();
         }
