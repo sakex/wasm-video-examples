@@ -108,6 +108,7 @@ class Game {
             return;
         }
         this.state.currentPlayer = this.findNextPlayer();
+        this.emitState();
         if (this.state.currentPlayer !== this.state.firstHighestPlayer) {
             this.turnTable();
         } else {
