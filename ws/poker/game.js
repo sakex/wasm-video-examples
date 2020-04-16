@@ -230,7 +230,7 @@ class Game {
                 });
                 console.log(values);
                 console.log(colors);
-                return new Hand(values, colors);
+                return new Hand(values, colors, player);
             });
 
         this.players.forEach(player => player.socket.emit("winners", hands));
