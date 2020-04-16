@@ -1,4 +1,5 @@
 const Card = require("./card");
+const Winner = require("./winner");
 const Interactions = require("./interactions");
 
 const shuffleArray = (arr) => {
@@ -45,7 +46,8 @@ class Game {
             river: -1,
             turn: -1,
             playing: [],
-            started: false
+            started: false,
+            winner: [],
         }
     }
 
@@ -101,6 +103,7 @@ class Game {
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
     }
 
+    // TODO: check... all in one function called with different params
     check = (player) => {
         if (this.players.indexOf(player) === this.state.currentPlayer &&
             this.state.bets[this.state.currentPlayer] === this.state.highestBet) {
@@ -142,10 +145,8 @@ class Game {
     };
 
     nextPlayer = () => {
-        //skip a player that passed by checking if it's bet === -1
 
         // TODO: Ca ne peut pas marcher tout ca
-        let i = 1;
         while (!this.state.playing[this.state.currentPlayer + i] &&
         (this.state.currentPlayer + i) % this.players.length !== this.state.currentPlayer) {
             i++;
@@ -163,10 +164,10 @@ class Game {
             this.emitState();
             await Game.awaitTimer(300);
         }
-
     };
 
     blinds = async () => {
+        // TODO: use cst to not comupute again
         this.state.bets[(this.state.dealer + 1) % this.players.length] = this.smallBlind;
         this.state.bets[(this.state.dealer + 2) % this.players.length] = this.bigBlind;
         this.state.tokens[(this.state.dealer + 1) % this.players.length] -= this.smallBlind;
@@ -204,21 +205,86 @@ class Game {
         });
     }
 
-
-    //func isflush..
-    //list
-    checkHand = async () => {
-        let cards = {};
-        cards = this.state.flop;
-        cards[3] = this.state.river;
-        cards[4] = this.state.turn;
-        cards[5] = this.players[0].cards[0];
-        cards[6] = this.players[0].cards[1];
+    decideWinner = async () => {
+        let cards = [];
         const values = {};
-        cards.forEach((card) => {
-            if (card.value in values) values[card.value]++;
-            else values[card.value] = 1;
+        const colors = {};
+        cards.push(this.state.flop[0]);
+        cards.push(this.state.flop[1]);
+        cards.push(this.state.flop[2]);
+        cards.push(this.state.river);
+        cards.push(this.state.turn);
+
+        this.players.forEach((player, index) => {
+            cards.push(this.players[index].cards[0]);
+            cards.push(this.players[index].cards[1]);
+
+            cards.forEach((card) => {
+                if (card.value in values) {
+                    colors[card.value][values[card.value]] = card.color;
+                    values[card.value]++;
+                }
+                else {
+                    values[card.value] = 1;
+                    colors[card.value][0] = card.color;
+                }
+            });
+
+            //here call all the functions with values and colors as input
+            this.royalFlush(values, colors, cards, player);
+            this.straightFLush(values, colors, cards, player);
+            this.fourOfKind(values, colors, cards, player);
+            this.fullHouse(values, colors, cards, player);
+            this.regularFlush(values, colors, cards, player);
+            this.royalFlush(values, colors, cards, player);
+            this.regularStraight(values, colors, cards, player);
+            this.threeOfKind(values, colors, cards, player);
+            this.twoPair(values, colors, cards, player);
+            this.regularPair(values, colors, cards, player);
+            this.highCard(values, colors, cards, player);
+
+            //this.state.winner.push(new Winner(player, "test", cards));
+
+            cards.pop();
+            cards.pop();
         });
+    }
+
+    royalFlush = (values, colors, cards, player) => {
+        if (values.slice(9,14).forEach(value => value >= 1)
+            && (colors.slice(9,14).forEach(value => value.find(element => element === "spade") === "spade")
+                || colors.slice(9,14).forEach(value => value.find(element => element === "heart") === "heart"))
+                || colors.slice(9,14).forEach(value => value.find(element => element === "diamond") === "diamond")
+                || colors.slice(9,14).forEach(value => value.find(element => element === "club") === "club") ){
+            this.state.winner.push(new Winner(player, "Royal flush", cards));
+        }
+    }
+
+    straightFLush = (values, colors, cards, player) => {
+    }
+
+    fourOfKind = (values, colors, cards, player) => {
+    }
+
+    fullHouse = (values, colors, cards, player) => {
+    }
+
+    regularFlush = (values, colors, cards, player) => {
+    }
+
+    regularStraight = (values, colors, cards, player) => {
+    }
+
+    threeOfKind = (values, colors, cards, player) => {
+    }
+
+    twoPair = (values, colors, cards, player) => {
+    }
+
+    regularPair = (values, colors, cards, player) => {
+    }
+
+    highCard = (values, colors, cards, player) => {
     }
 
     playRound = async () => {
@@ -235,8 +301,8 @@ class Game {
         await this.turn();
         await this.turnTable();
         await this.pot(3);
-        await this.checkHand();
-        //await this.decideWinner();
+        //await this.checkHand();
+        await this.decideWinner();
         //await this.distributeMoney();
         await this.checkValidPlayers();
         await this.dealerChange();

@@ -19,10 +19,10 @@ class Interactions {
             })
             .on("pass", (raise) => {
                 //to give up we change the bets to -1 and he will be skipped automatically
-                this.game.pass(this.player, raise);
+                this.game.fold(this.player, raise);
             })
             .on("follow", () => {
-                this.game.follow(this.player);
+                this.game.call(this.player);
             })
             .on("raise", () => {
                 this.game.raise(this.player);
