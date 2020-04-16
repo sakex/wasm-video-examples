@@ -227,6 +227,8 @@ class Game {
                     if (card.color in colors) colors[card.color].push(card);
                     else colors[card.color] = [card];
                 });
+                console.log(values);
+                console.log(colors);
                 return new Hand(values, colors);
             });
 
