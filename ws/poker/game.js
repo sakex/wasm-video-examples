@@ -128,9 +128,9 @@ class Game {
         }, TIMER);
     };
 
-    pay = (index, amount) => {
+    pay = (index, amount, blind = false) => {
         try{
-            if(index !== this.state.currentPlayer) return false;
+            if(blind || index !== this.state.currentPlayer) return false;
             const totalBet = amount + this.state.bets[index];
             if (amount === this.state.tokens[index] ||
                 totalBet === this.state.highestBet ||
@@ -163,8 +163,8 @@ class Game {
         this.state.river = null;
         this.state.turn = null;
         this.state.highestBet = 0;
-        this.pay(smallPos, this.smallBlind);
-        this.pay(bigPos, this.bigBlind);
+        this.pay(smallPos, this.smallBlind, true);
+        this.pay(bigPos, this.bigBlind, true);
         this.state.currentPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = this.findNextPlayer();
         this.state.firstHighestPlayer = this.state.currentPlayer
