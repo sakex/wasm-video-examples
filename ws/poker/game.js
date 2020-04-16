@@ -226,6 +226,7 @@ class Game {
             });
 
         const winners = Hand.compareHands(hands);
+        console.log(winners);
         this.players.forEach(player => player.socket.emit("winners", winners));
         this.winPot(winners);
     };
