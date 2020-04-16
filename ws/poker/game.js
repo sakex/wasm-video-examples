@@ -36,7 +36,7 @@ class Game {
             bets: [],
             tokens: [],
             highestBet: 0,
-            pot: [],
+            pot: 0,
             flop: [],
             river: null,
             turn: null,
@@ -79,14 +79,13 @@ class Game {
         this.state.dealer = Math.round(Math.random() * this.players.length);
         this.state.firstHighestPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
-        //console.log("start");
         this.state.started = true;
         this.emitState();
         this.blinds();
     };
 
     findNextPlayer = () => {
-        let it = this.state.currentPlayer;
+        let it = this.state.currentPlayer + 1;
         for (; it < this.state.playing.length; ++it) if (this.state.playing) return it;
         for (it = 0; it < this.state.currentPlayer; ++it) if (this.state.playing) return it;
     };
@@ -106,9 +105,6 @@ class Game {
             this.winPot([{ player: this.players[index]}])
             return;
         }
-        this.state.timerStart = new Date().getTime();
-        this.state.timerEnd = this.state.timerStart + 10000;
-        this.emitState();
         if (this.state.currentPlayer !== this.state.firstHighestPlayer) {
             this.state.currentPlayer = this.findNextPlayer();
             this.turnTable();
@@ -118,6 +114,9 @@ class Game {
     };
 
     turnTable = () => {
+        this.state.timerStart = new Date().getTime();
+        this.state.timerEnd = this.state.timerStart + 10000;
+        this.emitState();
         this.timeout = setTimeout(() => {
             if (this.state.bets[this.state.currentPlayer] < this.state.highestBet) {
                 this.fold(this.state.currentPlayer);
@@ -127,23 +126,31 @@ class Game {
     };
 
     pay = (index, amount) => {
-        const totalBet = amount + this.state.bets[index];
-        if (amount === this.state.tokens[index] ||
-            totalBet === this.state.highestBet ||
-            totalBet >= this.state.highestBet + this.smallBlind) {
-            this.state.bets[index] += amount;
-            this.state.tokens[index] -= amount;
-            if (totalBet > this.state.highestBet) {
-                this.state.highestBet = totalBet;
-                this.state.firstHighestPlayer = index;
+        try{
+            const totalBet = amount + this.state.bets[index];
+            if (amount === this.state.tokens[index] ||
+                totalBet === this.state.highestBet ||
+                totalBet >= this.state.highestBet + this.smallBlind) {
+                this.state.bets[index] += amount;
+                this.state.pot += amount;
+                this.state.tokens[index] -= amount;
+                if (totalBet > this.state.highestBet) {
+                    this.state.highestBet = totalBet;
+                    this.state.firstHighestPlayer = index;
+                }
+                return true;
+            } else {
+                this.players[index].socket.emit("err", "Amount raised too low");
+                return false;
             }
-        } else {
-            this.players[index].socket.emit("err", "Amount raised too low");
         }
-        this.emitState();
+        catch(err) {
+            console.error(err);
+        }
     };
 
     blinds = () => {
+        this.resetBets();
         this.dealerChange();
         const smallPos = (this.state.dealer + 1) % this.players.length;
         const bigPos = (this.state.dealer + 2) % this.players.length;
@@ -153,14 +160,19 @@ class Game {
         this.state.highestBet = 0;
         this.pay(smallPos, this.smallBlind);
         this.pay(bigPos, this.bigBlind);
+        this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
+        this.state.currentPlayer = this.findNextPlayer();
+        this.state.firstHighestPlayer = this.state.currentPlayer
         this.distributeCards();
         this.nextFunc = this.flop;
         this.turnTable();
     };
 
     flop = () => {
+        this.resetBets();
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
-        this.pot(0);
+        this.state.currentPlayer = this.findNextPlayer();
+        this.state.firstHighestPlayer = this.state.currentPlayer
         for (let i = 0; i < 3; ++i) this.state.flop.push(this.deck.pop().serialize());
         this.emitState();
         this.nextFunc = this.river;
@@ -168,8 +180,10 @@ class Game {
     };
 
     river = () => {
-        this.pot(1);
+        this.resetBets();
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
+        this.state.currentPlayer = this.findNextPlayer();
+        this.state.firstHighestPlayer = this.state.currentPlayer
         this.state.river = this.deck.pop().serialize();
         this.emitState();
         this.nextFunc = this.turn;
@@ -177,9 +191,11 @@ class Game {
     };
 
     turn = () => {
-        this.pot(2);
+        this.resetBets();
         this.state.turn = this.deck.pop().serialize();
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
+        this.state.currentPlayer = this.findNextPlayer();
+        this.state.firstHighestPlayer = this.state.currentPlayer
         this.emitState();
         this.nextFunc = this.decideWinner;
         this.turnTable();
@@ -206,26 +222,18 @@ class Game {
         this.winPot(winners);
     };
 
-    pot = (turn) => {
-        this.state.bets.forEach(bet => this.state.pot[turn] += bet);
-        this.state.bets.fill(0);
+    resetBets = () => {
         this.state.highestBet = 0;
-        this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
-    };
+        for(let i = 0; i < this.state.bets.length; ++i) this.state.bets[i] = 0;
+    }
 
     winPot = (arr) => {
-        // TODO
-
-        let allPot = 0;
-        for (let i = 0; i < 4; i++) {
-            allPot += this.state.pot[i];
-            this.state.pot[i] = 0;
-        }
         const arrLength = arr.length;
+        const amount = Math.round(this.state.pot / arrLength);
         arr.forEach(winner => {
-            return this.state.tokens[winner.player.id] += parseInt(allPot / arrLength);
+            this.state.tokens[winner.player.index] += amount;
         })
-        console.log("winner");
+        this.state.pot = 0;
         this.blinds();
     };
 
@@ -261,40 +269,10 @@ class Game {
     };
 
     // TODO: check... all in one function called with different params
-    check = (player) => {
-        if (this.players.indexOf(player) === this.state.currentPlayer &&
-            this.state.bets[this.state.currentPlayer] === this.state.highestBet) {
-            //this.state.bets[this.state.currentPlayer] = this.state.highestBet;
-            this.playerTurn();
-        }
-    };
-
-    call = (player) => {
-        if (this.players.indexOf(player) === this.state.currentPlayer &&
-            this.state.bets[this.state.currentPlayer] < this.state.highestBet &&
-            this.state.highestBet - this.state.bets[this.state.currentPlayer] <= this.state.tokens[this.state.currentPlayer]) {
-            console.log("follow is valid");
-            this.state.bets[this.state.currentPlayer] = this.state.highestBet;
-            this.state.tokens[this.state.currentPlayer] -= (this.state.highestBet + this.state.bets[this.state.currentPlayer]);
-            this.playerTurn();
-        }
-    };
-
-    raise = (player, raise) => {
-        if (this.players.indexOf(player) === this.state.currentPlayer &&
-            raise + this.state.bets[this.state.currentPlayer] >= this.state.highestBet &&
-            raise <= this.state.tokens[this.state.currentPlayer]) {
-            console.log("raise is valid");
-            this.state.bets[this.state.currentPlayer] += raise;
-            this.state.tokens[this.state.currentPlayer] -= raise;
-            this.state.highestBet = this.state.bets[this.state.currentPlayer];
-            this.state.firstHighestPlayer = this.state.currentPlayer;
-            this.playerTurn();
-        }
-    };
 
     fold = (index) => {
         if (index === this.state.currentPlayer) {
+            console.log("fold");
             this.state.playing[this.state.currentPlayer] = false;
             this.playerTurn();
         }

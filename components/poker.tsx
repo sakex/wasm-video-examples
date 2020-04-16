@@ -48,7 +48,7 @@ const CallButton = Styled.div`
     &:hover {
         background-color: rgba(240, 10, 10, .7);
     }
-`
+`;
 
 const CheckButton = Styled.button`
     ${baseButton}
@@ -93,7 +93,7 @@ const RaiseButton = Styled.div`
     &:hover {
         background-color: rgba(240, 10, 10, .7);
     }
-`
+`;
 
 interface PokerProps {
     socket: SocketIOClient.Socket
@@ -102,7 +102,8 @@ interface PokerProps {
 interface StartedState {
     started: boolean,
     highestBet: number,
-    bet?: number
+    bet?: number,
+    currentBet?: number
 }
 
 export default class extends Component<PokerProps, StartedState> {
@@ -112,7 +113,8 @@ export default class extends Component<PokerProps, StartedState> {
     public readonly state: StartedState = {
         started: false,
         highestBet: 0,
-        bet: 0
+        bet: 0,
+        currentBet: 0
     };
 
     constructor(props) {
@@ -131,7 +133,11 @@ export default class extends Component<PokerProps, StartedState> {
             })
             .on("state", (state: PokerState, index) => {
                 console.log(state);
-                const newState: StartedState = {started: state.started, highestBet: state.highestBet};
+                const newState: StartedState = {
+                    started: state.started,
+                    highestBet: state.highestBet,
+                    currentBet: state.bets[index]
+                };
                 if (newState.highestBet != this.state.highestBet) {
                     newState.bet = newState.highestBet;
                 }
@@ -161,7 +167,7 @@ export default class extends Component<PokerProps, StartedState> {
 
     call = () => {
         if (this.tokens > this.state.highestBet) {
-            this.socket.emit("raise", this.state.highestBet);
+            this.socket.emit("raise", this.state.highestBet - this.state.currentBet);
         }
     };
 
