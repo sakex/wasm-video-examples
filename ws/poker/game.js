@@ -72,6 +72,7 @@ class Game {
     };
 
     start = () => {
+        this.state.tokens.push(1000);
         this.feedInteractions();
         this.state.dealer = Math.round(Math.random() * this.players.length);
         this.state.firstHighestPlayer = (this.state.dealer + 2) % this.players.length;
@@ -150,11 +151,9 @@ class Game {
 
     blinds = () => {
         this.state.bets = [];
-        this.state.tokens = [];
         this.state.playing = [];
         this.players.forEach(_ => {
             this.state.bets.push(0);
-            this.state.tokens.push(1000);
             this.state.playing.push(true);
         });
         this.resetBets();
