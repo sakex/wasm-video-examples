@@ -161,7 +161,7 @@ class Game {
         this.state.highestBet = 0;
         this.pay(smallPos, this.smallBlind);
         this.pay(bigPos, this.bigBlind);
-        this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
+        this.state.currentPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = this.findNextPlayer();
         this.state.firstHighestPlayer = this.state.currentPlayer
         this.distributeCards();
@@ -171,7 +171,7 @@ class Game {
 
     flop = () => {
         this.resetBets();
-        this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
+        this.state.currentPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = this.findNextPlayer();
         this.state.firstHighestPlayer = this.state.currentPlayer
         for (let i = 0; i < 3; ++i) this.state.flop.push(this.deck.pop().serialize());
@@ -182,7 +182,7 @@ class Game {
 
     river = () => {
         this.resetBets();
-        this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
+        this.state.currentPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = this.findNextPlayer();
         this.state.firstHighestPlayer = this.state.currentPlayer
         this.state.river = this.deck.pop().serialize();
