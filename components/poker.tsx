@@ -197,7 +197,7 @@ export default class extends Component<PokerProps, StartedState> {
                             <BetInput type="number" value={this.state.bet} onChange={this.valueChange}/>
                             <RaiseButton onClick={this.bet}>Raise</RaiseButton>
                         </Raise>
-                        <LeaveButton onClick={() => this.socket.emit("pass")}>Fold</LeaveButton>
+                        <LeaveButton onClick={() => this.socket.emit("fold")}>Fold</LeaveButton>
                     </>
                 }
             </>
