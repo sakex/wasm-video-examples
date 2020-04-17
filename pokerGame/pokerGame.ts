@@ -180,9 +180,9 @@ export class PokerGame {
                 this.ctx.fillText(`$ ${this.state.bets[index]}`, bX, bY);
             }
             this.ctx.fillStyle = "black";
-            this.ctx.fillRect(this.width / 2 - 100, 220, 200, 50);
+            this.ctx.fillRect(this.width / 2 - 100, 200, 200, 50);
             this.ctx.fillStyle = "gold";
-            this.ctx.fillText(`$ ${this.state.pot}`, this.width / 2 - 90, 245);
+            this.ctx.fillText(`$ ${this.state.pot}`, this.width / 2 - 90, 225);
         });
         this.ctx.closePath();
     };
