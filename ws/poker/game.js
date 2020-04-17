@@ -162,6 +162,7 @@ class Game {
     blinds = () => {
         this.state.bets = [];
         this.state.playing = [];
+        this.state.playerCards = [];
         this.players.forEach(_ => {
             this.state.bets.push(0);
             this.state.playing.push(true);
@@ -234,7 +235,8 @@ class Game {
         if (this.state.pot !== 0) this.decideWinner(cards, this.state.pot, this.players.filter((player, index) => this.state.playing[index] && player));
         this.state.pot = 0;
         this.state.currentPlayer = -1;
-        this.state.players.forEach(player => this.state.playerCards.push(player.cards));
+        this.state.playerCards = this.players.map(player => player.cards);
+        this.emitState();
         setTimeout(this.blinds, 10000);
     };
 
