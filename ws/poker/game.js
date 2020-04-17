@@ -106,6 +106,7 @@ class Game {
         }
         if (inGame === 1) {
             this.winPot([{player: this.players[index]}], this.state.pot);
+            setTimeout(this.blinds, 5000);
             return;
         }
         this.state.currentPlayer = this.findNextPlayer();

@@ -84,7 +84,7 @@ export class PokerGame {
     };
 
     private setSeatsPos = () => {
-        const seats = [[600, 650], [200, 570], [142, 165], [600, 100], [1135, 150], [1150, 630]];
+        const seats = [[600, 650], [100, 570], [142, 165], [600, 100], [1135, 150], [1150, 630]];
         const betsPos = [[600, 550], [230, 520], [167, 180], [600, 150], [1085, 150], [1150, 680]];
         const midPos = [[450, 330], [540, 330], [630, 330], [720, 330], [810, 330]];
         const tokenPos = [[600, 600], [200, 570], [142, 165], [600, 100], [1135, 150], [1150, 630]];
@@ -180,9 +180,9 @@ export class PokerGame {
                 this.ctx.fillText(`$ ${this.state.bets[index]}`, bX, bY);
             }
             this.ctx.fillStyle = "black";
-            this.ctx.fillRect(this.width / 2 - 30, 140, 100, 50);
+            this.ctx.fillRect(this.width / 2 - 100, 140, 200, 50);
             this.ctx.fillStyle = "gold";
-            this.ctx.fillText(`$ ${this.state.pot}`, this.width / 2, 170);
+            this.ctx.fillText(`$ ${this.state.pot}`, this.width / 2 - 90, 165);
         });
         this.ctx.closePath();
     };
