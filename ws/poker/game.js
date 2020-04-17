@@ -330,6 +330,7 @@ class Game {
     fold = (index) => {
         if (index === this.state.currentPlayer) {
             this.state.playing[index] = false;
+            if (index === this.state.firstHighestPlayer) this.state.firstHighestPlayer = this.findNextPlayer();
             this.playerTurn();
         }
     };

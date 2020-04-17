@@ -113,8 +113,8 @@ export class PokerGame {
     private changeTimer = (start: number, end: number) => {
         if (this.timeBar) this.timeBar.stop();
         if (start && end && this.seats.length) {
-            const {length} = this.state.tokens;
-            const pos = this.state.currentPlayer >= this.index ? (this.state.currentPlayer - this.index) : (length - this.index + this.state.currentPlayer);
+            const index = this.state.currentPlayer;
+            const pos = index >= this.index ? (index - this.index) : (6 - this.index + index);
             const [x, y] = this.seats[pos];
             this.timeBar = new TimeBar(start, end, x, y, this.ctx);
         }
