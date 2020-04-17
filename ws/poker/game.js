@@ -327,7 +327,7 @@ class Game {
 
     fold = (index) => {
         if (index === this.state.currentPlayer) {
-            this.state.playing[this.state.currentPlayer] = false;
+            this.state.playing[index] = false;
             this.playerTurn();
         }
     };
