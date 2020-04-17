@@ -54,13 +54,17 @@ class Game {
 
     addPlayer = newPlayer => {
         this.players.push(newPlayer);
+        const newIndex = this.players.length - 1;
         setTimeout(() => {
-            this.players.forEach(player => {
-                if (newPlayer.id !== player.id) {
-                    player.socket.emit("newPlayer", newPlayer.id);
-                }
+            this.players.forEach((player, index) => {
+                const shouldCall = (newPlayer.id !== player.id);
+                newPlayer.socket.emit("newPlayer", {id: player.id, index, shouldCall});
             });
-        }, TIMER);
+            this.players.forEach((player) => {
+                player.socket.emit("newPlayer", {id: newPlayer.id, index: newIndex, shouldCall: false});
+            });
+        }, 5000);
+        return this.players.length - 1;
     };
 
     feedInteractions = () => {
@@ -110,7 +114,6 @@ class Game {
         if (this.state.currentPlayer !== this.state.firstHighestPlayer) {
             this.turnTable();
         } else {
-            console.log(this.nextFunc);
             this.nextFunc();
         }
     };
@@ -123,14 +126,6 @@ class Game {
             if (this.state.bets[this.state.currentPlayer] < this.state.highestBet) {
                 this.fold(this.state.currentPlayer);
             }
-            {/*
-            if (this.state.tokens[this.state.currentPlayer] === 0) {
-                console.log("players before splice: ", this.state.players);
-                this.players.splice(this.state.currentPlayer + 1, this.state.currentPlayer);
-                console.log("players before splice: ", this.state.players);
-            }
-            */}
-
             this.playerTurn();
         }, TIMER);
     };
@@ -211,16 +206,14 @@ class Game {
     };
 
     turn = () => {
-        this.players.forEach(player => player.socket.emit("winners", "IN TURN"));
-
         this.resetBets();
         this.state.turn = this.deck.pop().serialize();
         this.state.currentPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = this.findNextPlayer();
         this.state.firstHighestPlayer = this.state.currentPlayer;
         this.emitState();
+        this.nextFunc = this.decideWinner;
 
-        this.players.forEach(player => player.socket.emit("winners", 1));
         this.nextFunc = this.overallWinners;
         this.turnTable();
     };
@@ -245,7 +238,6 @@ class Game {
     decideWinner = (cards, pot, players) => {
         const hands = players.map((player) => {
             const cardCp = [...cards, ...player.cards];
-            this.players.forEach(player => player.socket.emit("winners", cardCp));
             const values = {};
             const colors = {};
             cardCp.forEach((card) => {
@@ -255,8 +247,6 @@ class Game {
                 if (color in colors) colors[color].push(card);
                 else colors[color] = [card];
             });
-            //console.log(values);
-            //console.log(colors);
             return new Hand(values, colors, player);
         });
 
@@ -267,34 +257,6 @@ class Game {
     };
 
     resetBets = () => {
-        if (this.state.isTapis.length) {
-            const contenders = [];
-            let tapisPot = 0;
-            //console.log("isTapis: ", this.state.isTapis);
-            this.state.playing.forEach((value, index) => {
-                if (value === true) contenders.push(index);
-            });
-            //console.log("contenders: ", contenders);
-            this.state.isTapis.sort((a, b) => a[1] - b[1]).forEach(element => {
-                console.log("isTapis Sorted (normal multiple times): ", this.state.isTapis);
-                console.log("playing: ", this.state.playing);
-                if (this.state.playing[element[0]]) {
-
-                    tapisPot = element[1] * contenders.length;
-                    this.state.pot -= tapisPot;
-                    //this.state.playing[element[0]] = false;
-                    contenders.forEach(value => {
-                        this.state.bets[value] -= element[1];
-                        if (this.state.tokens[value] === 0) this.state.playing[value] = false; //to skip the ones who made tapis
-                    });
-                    console.log("playing: ", this.state.playing);
-                    this.state.tapisBet.push({pot: tapisPot, contenders: contenders});
-                }
-            });
-            //this.state.playing.forEach(index => );
-            this.state.isTapis = [];
-        }
-        console.log("tapisBet: ", this.state.tapisBet);
         this.state.highestBet = 0;
         for (let i = 0; i < this.state.bets.length; ++i) this.state.bets[i] = 0;
     };

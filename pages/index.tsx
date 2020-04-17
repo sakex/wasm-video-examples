@@ -9,12 +9,12 @@ interface State {
     conId: string,
     members: string[],
     inputName: string,
-    joined: boolean,
+    joined: number,
     tables: TableData[]
 }
 
 export default class Index extends Component<{}, State> {
-    public state: State = {conId: null, members: [], inputName: "", joined: false, tables: []};
+    public state: State = {conId: null, members: [], inputName: "", joined: -1, tables: []};
     private readonly socket: SocketIOClient.Socket;
 
     constructor(props) {
@@ -36,9 +36,10 @@ export default class Index extends Component<{}, State> {
             console.error(`An error occurred: ${error}`);
         });
 
-        this.socket.on("members", (members: string[]) => this.setState({members}));
-
-        this.socket.on("joined", (joined: boolean) => this.setState({joined}));
+        this.socket.on("joined", (joined: number) => {
+            this.setState({joined});
+            console.log("index:", joined)
+        });
 
         this.socket.on("tables", (tables: TableData[]) => this.setState({tables}));
     };
@@ -59,11 +60,9 @@ export default class Index extends Component<{}, State> {
                     <NameInput inputName={this.state.inputName} onKeyPress={this.keyPress}
                                onChange={this.valueChange}
                                sendName={this.sendName}/> :
-                    (this.state.joined ?
-                        <>
-                            <Poker socket={this.socket}/>
-                            <VideoChat socket={this.socket} conId={this.state.conId} members={this.state.members}/>
-                        </> :
+                    (this.state.joined !== -1 ?
+                        <Poker socket={this.socket} conId={this.state.conId} index={this.state.joined}/>
+                        :
                         <Lobby socket={this.socket} tables={this.state.tables}/>)
                 }
             </>

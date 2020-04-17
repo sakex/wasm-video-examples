@@ -1,10 +1,34 @@
 import React, {Component} from "react";
 import {PokerGame, PokerState} from "../pokerGame/pokerGame";
 import Styled from "styled-components";
+import {VideoChat} from "@components/videoChat";
+
+const Buttons = Styled.div`
+    position: absolute;
+    top: 800px;
+    width: 100%;
+    left: 0;
+    text-align: center;
+`;
 
 const GameParent = Styled.div`
     width: 1100px;
     height: 725.6px;
+    position: absolute;
+    top: 0;
+    left: calc(50% - 550px);
+    z-index: 6;
+`;
+
+const Background = Styled.div`
+    background-image: url("/sprites/table.png");
+    background-size: cover;
+    width: 1100px;
+    height: 725.6px;
+    position: absolute;
+    top: 0;
+    left: calc(50% - 550px);
+    z-index: 4;
 `;
 
 const baseButton = `
@@ -96,42 +120,66 @@ const RaiseButton = Styled.div`
 `;
 
 interface PokerProps {
-    socket: SocketIOClient.Socket
+    socket: SocketIOClient.Socket,
+    conId: string,
+    index: number
 }
 
 interface StartedState {
     started: boolean,
     highestBet: number,
     bet?: number,
-    currentBet?: number
+    currentBet?: number,
+    members?: [number, string][]
 }
 
 export default class extends Component<PokerProps, StartedState> {
     private game: PokerGame;
+    private callRemote: (id: string) => Promise<void>;
+    private setVideoPos: (id: string, x: number, y: number) => void;
     private readonly socket: SocketIOClient.Socket;
     private tokens: number;
+    private readonly conId: string;
+    private mounted = false;
+    private readonly index: number;
     public readonly state: StartedState = {
         started: false,
         highestBet: 0,
         bet: 0,
-        currentBet: 0
+        currentBet: 0,
+        members: []
     };
 
     constructor(props) {
         super(props);
         this.socket = props.socket;
+        this.conId = props.conId;
+        this.index = props.index;
         this.feedSocket();
     }
 
     feedSocket = () => {
 
-        this.socket.on("turnPlayer", () => {
+        this.socket.on("cards", (cards: [[number, string], [number, string]]) => {
+            this.game.gotCards(...cards);
         })
-            .on("cards", (cards: [[number, string], [number, string]]) => {
-                console.log(cards);
-                this.game.gotCards(...cards);
+            .on("newPlayer", async ({id, index, shouldCall}: { id: string, index: number, shouldCall: boolean }) => {
+                const cb = async () => {
+                    if (this.mounted) {
+                        if (shouldCall) {
+                            await this.callRemote(id);
+                        }
+                        if(index !== this.index) {
+                            const [x, y] = this.game.getSeat(index);
+                            this.setVideoPos(id, x, y);
+                        }
+                    } else {
+                        setTimeout(cb, 300);
+                    }
+                };
+                await cb();
             })
-            .on("winners", winners => console.log(winners))
+            .on("log", msg => console.log(msg))
             .on("state", (state: PokerState, index) => {
                 console.log(state);
                 const newState: StartedState = {
@@ -177,30 +225,41 @@ export default class extends Component<PokerProps, StartedState> {
     };
 
     componentDidMount() {
-        this.game = new PokerGame(document.querySelector("#__poker_parent"));
+        this.game = new PokerGame(document.querySelector("#__poker_parent"), this.index);
     }
 
     render() {
         return (
             <>
+                <Background/>
+                <VideoChat renderProps={(callRemote, setVideoPos) => {
+                    this.callRemote = callRemote;
+                    this.setVideoPos = setVideoPos;
+                    this.mounted = true;
+                }}
+                           socket={this.socket}
+                           conId={this.conId} members={this.state.members.map(member => member[1])}/>
                 <GameParent id={"__poker_parent"}/>
-                {!this.state.started ? <>
-                        <LeaveButton onClick={() => this.socket.emit("leave")}>leave</LeaveButton>
-                        <StartButton onClick={() => this.socket.emit("start")}>start</StartButton>
-                    </> :
-                    <>
-                        <CheckButton onClick={this.check} disabled={this.state.highestBet === this.state.currentBet}>Check</CheckButton>
-                        {this.tokens > this.state.highestBet ?
-                            <CallButton onClick={this.call}>Call</CallButton> :
-                            <CallButton onClick={this.allIn}>All in</CallButton>
-                        }
-                        <Raise>
-                            <BetInput type="number" value={this.state.bet} onChange={this.valueChange}/>
-                            <RaiseButton onClick={this.bet}>Raise</RaiseButton>
-                        </Raise>
-                        <LeaveButton onClick={() => this.socket.emit("fold")}>Fold</LeaveButton>
-                    </>
-                }
+                <Buttons>
+                    {!this.state.started ? <>
+                            <LeaveButton onClick={() => this.socket.emit("leave")}>leave</LeaveButton>
+                            <StartButton onClick={() => this.socket.emit("start")}>start</StartButton>
+                        </> :
+                        <>
+                            <CheckButton onClick={this.check}
+                                         disabled={this.state.highestBet === this.state.currentBet}>Check</CheckButton>
+                            {this.tokens > this.state.highestBet ?
+                                <CallButton onClick={this.call}>Call</CallButton> :
+                                <CallButton onClick={this.allIn}>All in</CallButton>
+                            }
+                            <Raise>
+                                <BetInput type="number" value={this.state.bet} onChange={this.valueChange}/>
+                                <RaiseButton onClick={this.bet}>Raise</RaiseButton>
+                            </Raise>
+                            <LeaveButton onClick={() => this.socket.emit("fold")}>Fold</LeaveButton>
+                        </>
+                    }
+                </Buttons>
             </>
         );
     }

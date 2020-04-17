@@ -29,10 +29,10 @@ export class PokerGame {
     private height: number;
     private readonly canvas;
     private cards: Card[] = [];
-    private index: number;
-    private seats: [number, number][];
-    private betsPos: [number, number][];
-    private midPos: [number, number][];
+    private seats: [number, number][] = [];
+    private betsPos: [number, number][] = [];
+    private midPos: [number, number][] = [];
+    private tokenPos: [number, number][] = [];
     private timeBar: TimeBar;
     private midCards: Card[] = [];
     private state: PokerState = new class implements PokerState {
@@ -52,17 +52,17 @@ export class PokerGame {
         tables: TableData[];
         timerEnd: number;
         timerStart: number;
-        tokens: number[];
+        tokens: number[] = [];
         turn: [number, string];
     };
 
-    constructor(private readonly parent: HTMLElement) {
+    constructor(private readonly parent: HTMLElement, private index: number) {
+        this.state.tokens = new Array(index + 1).fill(1000);
         Card.setSrc("/sprites/cards.png");
         this.width = parent.offsetWidth;
         this.height = parent.offsetHeight;
         const canvas: HTMLCanvasElement = document.createElement("canvas");
-        canvas.style.backgroundImage = "url('/sprites/table.png')";
-        canvas.style.backgroundSize = "cover";
+        canvas.style.zIndex = "4";
         canvas.width = this.width;
         canvas.height = this.height;
         parent.appendChild(canvas);
@@ -73,15 +73,27 @@ export class PokerGame {
         this.setSeatsPos();
     }
 
+    public getSeat = (index: number): [number, number] => {
+        if (this.state.tokens.length <= index) {
+            this.state.tokens = new Array(index + 1).fill(1000);
+        }
+        const {length} = this.state.tokens;
+        const pos = index >= this.index ? (index - this.index) : (length - this.index + index);
+        console.log(this.index, index, pos, length);
+        return this.seats[pos];
+    };
+
     private setSeatsPos = () => {
         const seats = [[600, 650], [200, 570], [142, 165], [600, 100], [1135, 150], [1150, 630]];
-        const betsPos = [[600, 600], [230, 520], [167, 180], [600, 150], [1085, 150], [1150, 680]];
+        const betsPos = [[600, 550], [230, 520], [167, 180], [600, 150], [1085, 150], [1150, 680]];
         const midPos = [[450, 330], [540, 330], [630, 330], [720, 330], [810, 330]];
+        const tokenPos = [[600, 600], [200, 570], [142, 165], [600, 100], [1135, 150], [1150, 630]];
         const wScale = this.width / 1376;
         const hScale = this.height / 891;
         this.seats = seats.map((pair: number[]) => [pair[0] * wScale, pair[1] * hScale]);
         this.betsPos = betsPos.map((pair: number[]) => [pair[0] * wScale, pair[1] * hScale]);
         this.midPos = midPos.map((pair: number[]) => [pair[0] * wScale, pair[1] * hScale]);
+        this.tokenPos = tokenPos.map((pair: number[]) => [pair[0] * wScale, pair[1] * hScale]);
     };
 
     public setIndex = (index: number) => {
@@ -105,7 +117,7 @@ export class PokerGame {
 
     private changeTimer = (start: number, end: number) => {
         if (this.timeBar) this.timeBar.stop();
-        if (start && end) {
+        if (start && end && this.seats.length) {
             const {length} = this.state.tokens;
             const pos = this.state.currentPlayer >= this.index ? (this.state.currentPlayer - this.index) : (length - this.index + this.state.currentPlayer);
             const [x, y] = this.seats[pos];
@@ -152,16 +164,25 @@ export class PokerGame {
             });
         }
         const {length} = this.state.tokens;
-        this.ctx.fillStyle = "gold";
         this.ctx.font = "30px Georgia";
         this.state.tokens.forEach((token, index) => {
             const pos = index >= this.index ? (index - this.index) : (length - this.index + index);
-            const [x, y] = this.seats[pos];
-            this.ctx.fillText(`$ ${token}`, x, y);
-            if (this.state.bets[index]) {
+            const [x, y] = this.tokenPos[pos];
+            this.ctx.fillStyle = "black";
+            this.ctx.fillRect(x - 10, y - 30, 100, 50);
+            this.ctx.fillStyle = "gold";
+            this.ctx.fillText(`$ ${token}`, x, y); // Tokens
+            if (this.state.playing[index]) {
                 const [bX, bY] = this.betsPos[pos];
+                this.ctx.fillStyle = "black";
+                this.ctx.fillRect(bX - 30, bY - 30, 100, 50);
+                this.ctx.fillStyle = "gold";
                 this.ctx.fillText(`$ ${this.state.bets[index]}`, bX, bY);
             }
+            this.ctx.fillStyle = "black";
+            this.ctx.fillRect(this.width / 2 - 30, 140, 100, 50);
+            this.ctx.fillStyle = "gold";
+            this.ctx.fillText(`$ ${this.state.pot}`, this.width / 2, 170);
         });
         this.ctx.closePath();
     };

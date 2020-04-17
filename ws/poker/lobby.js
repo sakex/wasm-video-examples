@@ -30,8 +30,8 @@ class Lobby {
             try {
                 const game = Lobby.games[id];
                 if (!game.players.includes(this) && game.players.length < Lobby.maxPlayer) {
-                    this.socket.emit("joined", true);
-                    game.addPlayer(this);
+                    const index = game.addPlayer(this);
+                    this.socket.emit("joined", index);
                     this.game = game;
                     this.emitTables();
                 }
@@ -43,10 +43,10 @@ class Lobby {
                 const current = Lobby.lastGame++;
                 const game = new Game(`${id}_${current}`);
                 Lobby.games[`${id}_${current}`] = game;
-                game.addPlayer(this);
+                const index = game.addPlayer(this);
                 this.game = game;
                 this.emitTables();
-                this.socket.emit("joined", true);
+                this.socket.emit("joined", index);
             })
             .on("start", async () => {
                 try {
@@ -64,7 +64,7 @@ class Lobby {
                     delete Lobby.games[this.game.id];
                 }
                 this.game = undefined;
-                this.socket.emit("joined", false);
+                this.socket.emit("joined", -1);
                 this.emitTables();
             });
 
