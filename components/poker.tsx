@@ -130,7 +130,7 @@ interface StartedState {
     highestBet: number,
     bet?: number,
     currentBet?: number,
-    members?: [number, string][]
+    members?: string[]
 }
 
 export default class extends Component<PokerProps, StartedState> {
@@ -165,7 +165,7 @@ export default class extends Component<PokerProps, StartedState> {
         })
             .on("newPlayer", async ({id, index, shouldCall}: { id: string, index: number, shouldCall: boolean }) => {
                 const cb = async () => {
-                    try{
+                    try {
                         if (this.mounted) {
                             if (shouldCall) {
                                 await this.callRemote(id);
@@ -177,14 +177,14 @@ export default class extends Component<PokerProps, StartedState> {
                         } else {
                             setTimeout(cb, 300);
                         }
-                    }
-                    catch(err){
+                    } catch (err) {
                         setTimeout(cb, 300);
                     }
                 };
                 await cb();
             })
             .on("log", msg => console.log(msg))
+            .on("members", msg => this.setState(members => msg))
             .on("state", (state: PokerState, index) => {
                 console.log(state);
                 const newState: StartedState = {
@@ -243,7 +243,7 @@ export default class extends Component<PokerProps, StartedState> {
                     this.mounted = true;
                 }}
                            socket={this.socket}
-                           conId={this.conId} members={this.state.members.map(member => member[1])}/>
+                           conId={this.conId} members={this.state.members}/>
                 <GameParent id={"__poker_parent"}/>
                 <Buttons>
                     {!this.state.started ? <>

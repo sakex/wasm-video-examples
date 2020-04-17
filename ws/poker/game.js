@@ -64,6 +64,9 @@ class Game {
             this.players.forEach((player) => {
                 player.socket.emit("newPlayer", {id: newPlayer.id, index: newIndex, shouldCall: false});
             });
+            this.players.forEach((player) => {
+                player.socket.emit("members", this.players.map(({id}) => id));
+            });
         }, 5000);
         return this.players.length - 1;
     };
