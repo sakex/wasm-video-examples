@@ -84,10 +84,10 @@ export class PokerGame {
     };
 
     private setSeatsPos = () => {
-        const seats = [[600, 650], [100, 570], [142, 165], [600, 100], [1135, 150], [1150, 630]];
-        const betsPos = [[600, 550], [230, 520], [167, 180], [600, 150], [1085, 150], [1150, 680]];
+        const seats = [[600, 650], [30, 520], [60, 30], [600, 0], [1135, 30], [1150, 600]];
+        const betsPos = [[620, 550], [230, 500], [167, 300], [480, 150], [1155, 350], [1190, 550]];
         const midPos = [[450, 330], [540, 330], [630, 330], [720, 330], [810, 330]];
-        const tokenPos = [[600, 600], [200, 570], [142, 165], [600, 100], [1135, 150], [1150, 630]];
+        const tokenPos = [[600, 600], [200, 560], [142, 250], [460, 100], [1135, 300], [1170, 600]];
         const wScale = this.width / 1376;
         const hScale = this.height / 891;
         this.seats = seats.map((pair: number[]) => [pair[0] * wScale, pair[1] * hScale]);
@@ -180,9 +180,9 @@ export class PokerGame {
                 this.ctx.fillText(`$ ${this.state.bets[index]}`, bX, bY);
             }
             this.ctx.fillStyle = "black";
-            this.ctx.fillRect(this.width / 2 - 100, 140, 200, 50);
+            this.ctx.fillRect(this.width / 2 - 100, 220, 200, 50);
             this.ctx.fillStyle = "gold";
-            this.ctx.fillText(`$ ${this.state.pot}`, this.width / 2 - 90, 165);
+            this.ctx.fillText(`$ ${this.state.pot}`, this.width / 2 - 90, 245);
         });
         this.ctx.closePath();
     };
