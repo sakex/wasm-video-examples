@@ -277,7 +277,7 @@ class Game {
 
                     tapisPot = element[1] * contenders.length;
                     this.state.pot -= tapisPot;
-                    //this.state.playing[element[0]] = false;
+                    this.state.playing[element[0]] = false;
                     contenders.forEach(value => {
                         this.state.bets[value] -= element[1];
                         if (this.state.tokens[value] === 0) this.state.playing[value] = false; //to skip the ones who made tapis
