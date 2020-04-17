@@ -101,7 +101,8 @@ class Game {
             }
         }
         if (inGame === 1) {
-            this.winPot([{player: this.players[index]}]);
+            //this.winPot([{player: this.players[index]}]);
+            this.overallWinners();
             return;
         }
         this.state.currentPlayer = this.findNextPlayer();
@@ -109,6 +110,7 @@ class Game {
         if (this.state.currentPlayer !== this.state.firstHighestPlayer) {
             this.turnTable();
         } else {
+            console.log(this.nextFunc);
             this.nextFunc();
         }
     };
@@ -121,6 +123,14 @@ class Game {
             if (this.state.bets[this.state.currentPlayer] < this.state.highestBet) {
                 this.fold(this.state.currentPlayer);
             }
+            {/*
+            if (this.state.tokens[this.state.currentPlayer] === 0) {
+                console.log("players before splice: ", this.state.players);
+                this.players.splice(this.state.currentPlayer + 1, this.state.currentPlayer);
+                console.log("players before splice: ", this.state.players);
+            }
+            */}
+
             this.playerTurn();
         }, TIMER);
     };
@@ -133,7 +143,9 @@ class Game {
                 totalBet === this.state.highestBet ||
                 totalBet >= this.state.highestBet + this.smallBlind) {
                 this.state.bets[index] += amount;
-                if (amount === this.state.tokens[index]) this.state.isTapis.push([index, this.state.bets[index]]);
+                if (amount === this.state.tokens[index] && amount !== 0) {
+                    this.state.isTapis.push([index, this.state.bets[index]]);
+                }
                 this.state.pot += amount;
                 this.state.tokens[index] -= amount;
                 if (totalBet > this.state.highestBet) {
@@ -158,7 +170,6 @@ class Game {
             this.state.bets.push(0);
             this.state.playing.push(true);
         });
-        this.resetBets();
         this.dealerChange();
         const smallPos = (this.state.dealer + 1) % this.players.length;
         const bigPos = (this.state.dealer + 2) % this.players.length;
@@ -210,22 +221,26 @@ class Game {
         this.emitState();
 
         this.players.forEach(player => player.socket.emit("winners", 1));
-        this.nextFunc = this.overallWinners();
+        this.nextFunc = this.overallWinners;
         this.turnTable();
     };
 
     overallWinners = () => {
         this.players.forEach(player => player.socket.emit("winners", "in decide"));
         const cards = [...this.state.flop, this.state.river, this.state.turn];
-        this.state.tapisBet.forEach(object => {
-            this.decideWinner(cards, object.pot, this.players.filter((player, index) =>
-                object.contenders.includes(index) && player));
-        });
-        this.state.tapisBet = [];
+        if (this.state.tapisBet.length) {
+            this.state.tapisBet.forEach(object => {
+                this.decideWinner(cards, object.pot, this.players.filter((player, index) =>
+                    object.contenders.includes(index) && player));
+            });
+            this.state.tapisBet = [];
+        }
         if (this.state.pot !== 0) this.decideWinner(cards, this.state.pot, this.players.filter((player, index) => this.state.playing[index] && player));
         this.state.pot = 0;
-        this.blinds();
-    }
+        this.nextFunc = this.blinds;
+        this.turnTable();
+    };
+
 
     decideWinner = (cards, pot, players) => {
         const hands = players.map((player) => {
@@ -240,35 +255,46 @@ class Game {
                 if (color in colors) colors[color].push(card);
                 else colors[color] = [card];
             });
-            console.log(values);
-            console.log(colors);
+            //console.log(values);
+            //console.log(colors);
             return new Hand(values, colors, player);
         });
 
-        const winners = Hand.compareHands(hands, pot);
+        const winners = Hand.compareHands(hands);
         console.log(winners);
         // this.players.forEach(player => player.socket.emit("winners", winners));
-        this.winPot(winners);
+        this.winPot(winners, pot);
     };
 
     resetBets = () => {
-        // TODO
-        const contenders = [];
-        this.state.playing.forEach((value, index) => {
-            if (value === true) contenders.push(index);
-        });
-        this.state.isTapis.sort((a, b) => a[1] - b[1]).forEach(element => {
-            let tapisPot = element[1] * contenders.length;
-            this.state.pot -= tapisPot;
-            //this.state.playing[element[0]] = false;
-            contenders.forEach(value => {
-                this.state.bets[value] -= element[1];
-                if (this.state.tokens[value] === 0) this.state.playing[value] = false; //to skip the ones who made tapis
+        if (this.state.isTapis.length) {
+            const contenders = [];
+            let tapisPot = 0;
+            //console.log("isTapis: ", this.state.isTapis);
+            this.state.playing.forEach((value, index) => {
+                if (value === true) contenders.push(index);
             });
-            this.state.tapisBet.push({pot: tapisPot, contenders: contenders});
-        });
-        //this.state.playing.forEach(index => );
-        this.state.isTapis = [];
+            //console.log("contenders: ", contenders);
+            this.state.isTapis.sort((a, b) => a[1] - b[1]).forEach(element => {
+                console.log("isTapis Sorted (normal multiple times): ", this.state.isTapis);
+                console.log("playing: ", this.state.playing);
+                if (this.state.playing[element[0]]) {
+
+                    tapisPot = element[1] * contenders.length;
+                    this.state.pot -= tapisPot;
+                    //this.state.playing[element[0]] = false;
+                    contenders.forEach(value => {
+                        this.state.bets[value] -= element[1];
+                        if (this.state.tokens[value] === 0) this.state.playing[value] = false; //to skip the ones who made tapis
+                    });
+                    console.log("playing: ", this.state.playing);
+                    this.state.tapisBet.push({pot: tapisPot, contenders: contenders});
+                }
+            });
+            //this.state.playing.forEach(index => );
+            this.state.isTapis = [];
+        }
+        console.log("tapisBet: ", this.state.tapisBet);
         this.state.highestBet = 0;
         for (let i = 0; i < this.state.bets.length; ++i) this.state.bets[i] = 0;
     };
@@ -301,12 +327,6 @@ class Game {
     };
 
     dealerChange = () => {
-        this.state.bets = [];
-        this.state.playing = [];
-        this.players.forEach(_ => {
-            this.state.bets.push(0);
-            this.state.playing.push(true);
-        });
         this.state.dealer = (this.state.dealer + 1) % this.players.length;
         this.state.firstHighestPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;

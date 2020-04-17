@@ -52,7 +52,7 @@ class Hand {
 
     isStraight = (values) => {
         // Values should be sorted
-        console.log(values);
+        //console.log(values);
         let streak = 1;
         for (let i = 1; i < values.length; ++i) {
             if (values[i] === values[i - 1] + 1) streak++;
@@ -66,7 +66,7 @@ class Hand {
 
     compute = (values, colors) => {
         let haveFlush = null;
-        console.log(colors);
+        //console.log(colors);
         Object.keys(colors).forEach(color => {
             if (colors[color].length >= 5) {
                 haveFlush = colors[color];
