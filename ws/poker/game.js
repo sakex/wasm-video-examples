@@ -105,8 +105,7 @@ class Game {
             }
         }
         if (inGame === 1) {
-            //this.winPot([{player: this.players[index]}]);
-            this.overallWinners();
+            this.winPot([{player: this.players[index]}], this.state.pot);
             return;
         }
         this.state.currentPlayer = this.findNextPlayer();
@@ -234,8 +233,7 @@ class Game {
         }
         if (this.state.pot !== 0) this.decideWinner(cards, this.state.pot, this.players.filter((player, index) => this.state.playing[index] && player));
         this.state.pot = 0;
-        this.nextFunc = this.blinds;
-        this.turnTable();
+        setTimeout(this.blinds, 5000);
     };
 
 
@@ -261,6 +259,27 @@ class Game {
     };
 
     resetBets = () => {
+        if (this.state.isTapis.length) {
+            const contenders = [];
+            let tapisPot = 0;
+            this.state.playing.forEach((value, index) => {
+                if (value === true) contenders.push(index);
+            });
+            this.state.isTapis.sort((a, b) => a[1] - b[1]).forEach(element => {
+                if (this.state.playing[element[0]]) {
+
+                    tapisPot = element[1] * contenders.length;
+                    this.state.pot -= tapisPot;
+                    //this.state.playing[element[0]] = false;
+                    contenders.forEach(value => {
+                        this.state.bets[value] -= element[1];
+                        if (this.state.tokens[value] === 0) this.state.playing[value] = false; //to skip the ones who made tapis
+                    });
+                    this.state.tapisBet.push({pot: tapisPot, contenders: contenders});
+                }
+            });
+            this.state.isTapis = [];
+        }
         this.state.highestBet = 0;
         for (let i = 0; i < this.state.bets.length; ++i) this.state.bets[i] = 0;
     };
@@ -294,7 +313,7 @@ class Game {
 
     dealerChange = () => {
         this.state.currentPlayer = this.state.dealer;
-        this.state.dealer =  this.findNextPlayer();
+        this.state.dealer = this.findNextPlayer();
         this.state.currentPlayer = (this.state.dealer + 1) % this.players.length;
         this.state.firstHighestPlayer = this.findNextPlayer();
     };
