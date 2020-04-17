@@ -49,6 +49,7 @@ class Game {
             timerEnd: null,
             isTapis: [],
             tapisBet: [],
+            playerCards: [],
         };
     }
 
@@ -216,8 +217,6 @@ class Game {
         this.state.currentPlayer = this.findNextPlayer();
         this.state.firstHighestPlayer = this.state.currentPlayer;
         this.emitState();
-        this.nextFunc = this.decideWinner;
-
         this.nextFunc = this.overallWinners;
         this.turnTable();
     };
@@ -234,7 +233,9 @@ class Game {
         }
         if (this.state.pot !== 0) this.decideWinner(cards, this.state.pot, this.players.filter((player, index) => this.state.playing[index] && player));
         this.state.pot = 0;
-        setTimeout(this.blinds, 5000);
+        this.state.currentPlayer = -1;
+        this.state.players.forEach(player => this.state.playerCards.push(player.cards));
+        setTimeout(this.blinds, 10000);
     };
 
 
