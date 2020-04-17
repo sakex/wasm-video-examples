@@ -166,7 +166,7 @@ export class PokerGame {
             this.ctx.fillRect(x - 10, y - 30, 100, 50);
             this.ctx.fillStyle = "gold";
             this.ctx.fillText(`$ ${token}`, x, y); // Tokens
-            if (this.state.playing[index]) {
+            if (this.state.bets && this.state.bets.length && this.state.bets[index]) {
                 const [bX, bY] = this.betsPos[pos];
                 this.ctx.fillStyle = "black";
                 this.ctx.fillRect(bX - 30, bY - 30, 100, 50);
