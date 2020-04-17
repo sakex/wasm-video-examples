@@ -165,21 +165,17 @@ export default class extends Component<PokerProps, StartedState> {
         })
             .on("newPlayer", async ({id, index, shouldCall}: { id: string, index: number, shouldCall: boolean }) => {
                 const cb = async () => {
-                    try {
-                        if (this.mounted) {
-                            this.game.getSeat(index);
-                            if (shouldCall) {
-                                await this.callRemote(id);
-                            }
-                            if (index !== this.index) {
-                                const [x, y] = this.game.getSeat(index);
-                                console.log(id, x, y);
-                                this.setVideoPos(id, x, y);
-                            }
-                        } else {
-                            setTimeout(cb, 300);
+                    if (this.mounted) {
+                        this.game.getSeat(index);
+                        if (shouldCall) {
+                            await this.callRemote(id);
                         }
-                    } catch (err) {
+                        if (index !== this.index) {
+                            const [x, y] = this.game.getSeat(index);
+                            console.log(id, x, y);
+                            this.setVideoPos(id, x, y);
+                        }
+                    } else {
                         setTimeout(cb, 300);
                     }
                 };

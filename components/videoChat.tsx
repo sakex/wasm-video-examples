@@ -103,7 +103,7 @@ export class VideoChat extends Component<VideoProps, {}> {
             if (user in this.idsPos)
                 this.streaming.set_video_pos(user, ...this.idsPos[user]);
         } catch (err) {
-            console.log(err);
+            console.error(err.stack);
         }
     };
 
