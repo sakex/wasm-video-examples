@@ -49,8 +49,10 @@ export class VideoChat extends Component<VideoProps, {}> {
                 this.streaming.set_video_pos(id, x, y);
             }
         } catch (err){
+            console.log(this.idsPos);
+            console.log(this.streaming.get_ids());
             console.error("setVideoPos failed: ")
-            console.error(err);
+            console.error(err.stack);
         }
     };
 

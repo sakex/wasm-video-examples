@@ -52,13 +52,17 @@ class Game {
 
     addPlayer = newPlayer => {
         this.players.push(newPlayer);
+        const newIndex = this.players.length - 1;
         setTimeout(() => {
             this.players.forEach((player, index) => {
-                if (newPlayer.id !== player.id) {
-                    player.socket.emit("newPlayer", {id: newPlayer.id, index});
-                }
+                const shouldCall = (newPlayer.id !== player.id);
+                newPlayer.socket.emit("newPlayer", {id: player.id, index, shouldCall});
             });
-        }, TIMER);
+            this.players.forEach((player) => {
+                player.socket.emit("newPlayer", {id: newPlayer.id, index: newIndex, shouldCall: false});
+            });
+        }, 5000);
+        return this.players.length - 1;
     };
 
     feedInteractions = () => {
@@ -197,28 +201,22 @@ class Game {
     };
 
     turn = () => {
-        this.players.forEach(player => player.socket.emit("winners", "IN TURN"));
-
         this.resetBets();
         this.state.turn = this.deck.pop().serialize();
         this.state.currentPlayer = (this.state.dealer + 2) % this.players.length;
         this.state.currentPlayer = this.findNextPlayer();
         this.state.firstHighestPlayer = this.state.currentPlayer;
         this.emitState();
-
-        this.players.forEach(player => player.socket.emit("winners", 1));
         this.nextFunc = this.decideWinner;
         this.turnTable();
     };
 
     decideWinner = () => {
-        this.players.forEach(player => player.socket.emit("winners", "in decide"));
         const cards = [...this.state.flop, this.state.river, this.state.turn];
 
         const hands = this.players.filter((player, index) => this.state.playing[index] && player)
             .map((player) => {
                 const cardCp = [...cards, ...player.cards];
-                this.players.forEach(player => player.socket.emit("winners", cardCp));
                 const values = {};
                 const colors = {};
                 cardCp.forEach((card) => {
@@ -228,14 +226,10 @@ class Game {
                     if (color in colors) colors[color].push(card);
                     else colors[color] = [card];
                 });
-                console.log(values);
-                console.log(colors);
                 return new Hand(values, colors, player);
             });
 
         const winners = Hand.compareHands(hands);
-        console.log(winners);
-        // this.players.forEach(player => player.socket.emit("winners", winners));
         this.winPot(winners);
     };
 

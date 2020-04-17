@@ -121,7 +121,8 @@ const RaiseButton = Styled.div`
 
 interface PokerProps {
     socket: SocketIOClient.Socket,
-    conId: string
+    conId: string,
+    index: number
 }
 
 interface StartedState {
@@ -140,6 +141,7 @@ export default class extends Component<PokerProps, StartedState> {
     private tokens: number;
     private readonly conId: string;
     private mounted = false;
+    private readonly index: number;
     public readonly state: StartedState = {
         started: false,
         highestBet: 0,
@@ -152,6 +154,7 @@ export default class extends Component<PokerProps, StartedState> {
         super(props);
         this.socket = props.socket;
         this.conId = props.conId;
+        this.index = props.index;
         this.feedSocket();
     }
 
@@ -160,12 +163,21 @@ export default class extends Component<PokerProps, StartedState> {
         this.socket.on("cards", (cards: [[number, string], [number, string]]) => {
             this.game.gotCards(...cards);
         })
-            .on("newPlayer", async ({id, index}: { id: string, index: number }) => {
-                if (this.mounted) {
-                    await this.callRemote(id);
-                    const [x, y] = this.game.getSeat(index);
-                    this.setVideoPos(id, x, y);
-                }
+            .on("newPlayer", async ({id, index, shouldCall}: { id: string, index: number, shouldCall: boolean }) => {
+                const cb = async () => {
+                    if (this.mounted) {
+                        if (shouldCall) {
+                            await this.callRemote(id);
+                        }
+                        if(index !== this.index) {
+                            const [x, y] = this.game.getSeat(index);
+                            this.setVideoPos(id, x, y);
+                        }
+                    } else {
+                        setTimeout(cb, 300);
+                    }
+                };
+                await cb();
             })
             .on("log", msg => console.log(msg))
             .on("state", (state: PokerState, index) => {
@@ -213,7 +225,7 @@ export default class extends Component<PokerProps, StartedState> {
     };
 
     componentDidMount() {
-        this.game = new PokerGame(document.querySelector("#__poker_parent"));
+        this.game = new PokerGame(document.querySelector("#__poker_parent"), this.index);
     }
 
     render() {
