@@ -53,9 +53,9 @@ class Game {
     addPlayer = newPlayer => {
         this.players.push(newPlayer);
         setTimeout(() => {
-            this.players.forEach(player => {
+            this.players.forEach((player, index) => {
                 if (newPlayer.id !== player.id) {
-                    player.socket.emit("newPlayer", newPlayer.id);
+                    player.socket.emit("newPlayer", {id: newPlayer.id, index});
                 }
             });
         }, TIMER);

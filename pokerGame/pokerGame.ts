@@ -30,9 +30,9 @@ export class PokerGame {
     private readonly canvas;
     private cards: Card[] = [];
     private index: number;
-    private seats: [number, number][];
-    private betsPos: [number, number][];
-    private midPos: [number, number][];
+    private seats: [number, number][] = [];
+    private betsPos: [number, number][] = [];
+    private midPos: [number, number][] = [];
     private timeBar: TimeBar;
     private midCards: Card[] = [];
     private state: PokerState = new class implements PokerState {
@@ -61,8 +61,7 @@ export class PokerGame {
         this.width = parent.offsetWidth;
         this.height = parent.offsetHeight;
         const canvas: HTMLCanvasElement = document.createElement("canvas");
-        canvas.style.backgroundImage = "url('/sprites/table.png')";
-        canvas.style.backgroundSize = "cover";
+        canvas.style.zIndex = "4";
         canvas.width = this.width;
         canvas.height = this.height;
         parent.appendChild(canvas);
@@ -71,6 +70,10 @@ export class PokerGame {
         this.canvas = canvas;
         document.body.onresize = this.onResize;
         this.setSeatsPos();
+    }
+
+    public getSeat = (index: number): [number, number] => {
+        return this.seats[index];
     }
 
     private setSeatsPos = () => {
@@ -105,7 +108,7 @@ export class PokerGame {
 
     private changeTimer = (start: number, end: number) => {
         if (this.timeBar) this.timeBar.stop();
-        if (start && end) {
+        if (start && end && this.seats.length) {
             const {length} = this.state.tokens;
             const pos = this.state.currentPlayer >= this.index ? (this.state.currentPlayer - this.index) : (length - this.index + this.state.currentPlayer);
             const [x, y] = this.seats[pos];

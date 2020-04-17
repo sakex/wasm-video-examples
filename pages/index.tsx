@@ -36,8 +36,6 @@ export default class Index extends Component<{}, State> {
             console.error(`An error occurred: ${error}`);
         });
 
-        this.socket.on("members", (members: string[]) => this.setState({members}));
-
         this.socket.on("joined", (joined: boolean) => this.setState({joined}));
 
         this.socket.on("tables", (tables: TableData[]) => this.setState({tables}));
@@ -60,10 +58,8 @@ export default class Index extends Component<{}, State> {
                                onChange={this.valueChange}
                                sendName={this.sendName}/> :
                     (this.state.joined ?
-                        <>
-                            <Poker socket={this.socket}/>
-                            <VideoChat socket={this.socket} conId={this.state.conId} members={this.state.members}/>
-                        </> :
+                        <Poker socket={this.socket} conId={this.state.conId}/>
+                        :
                         <Lobby socket={this.socket} tables={this.state.tables}/>)
                 }
             </>
