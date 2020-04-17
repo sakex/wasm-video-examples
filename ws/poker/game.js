@@ -110,6 +110,8 @@ class Game {
         }
         if (inGame === 1) {
             this.winPot([{player: this.players[index]}], this.state.pot);
+            this.state.pot = 0;
+            this.state.currentPlayer = -1;
             setTimeout(this.blinds, 5000);
             return;
         }
