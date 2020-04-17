@@ -166,8 +166,12 @@ class Game {
             this.state.playing.push(true);
         });
         this.dealerChange();
-        const smallPos = (this.state.dealer + 1) % this.players.length;
-        const bigPos = (this.state.dealer + 2) % this.players.length;
+        this.state.currentPlayer = this.state.dealer;
+        this.state.currentPlayer = this.findNextPlayer();
+        const smallPos = this.state.currentPlayer;
+        this.state.currentPlayer = this.findNextPlayer();
+        const bigPos = this.state.currentPlayer;
+        this.state.currentPlayer = this.findNextPlayer();
         this.state.flop = [];
         this.state.river = null;
         this.state.turn = null;
@@ -289,9 +293,10 @@ class Game {
     };
 
     dealerChange = () => {
-        this.state.dealer = (this.state.dealer + 1) % this.players.length;
-        this.state.firstHighestPlayer = (this.state.dealer + 2) % this.players.length;
-        this.state.currentPlayer = (this.state.dealer + 3) % this.players.length;
+        this.state.currentPlayer = this.state.dealer;
+        this.state.dealer =  this.findNextPlayer();
+        this.state.currentPlayer = (this.state.dealer + 1) % this.players.length;
+        this.state.firstHighestPlayer = this.findNextPlayer();
     };
 
     fold = (index) => {
