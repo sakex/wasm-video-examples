@@ -74,12 +74,7 @@ export class PokerGame {
     }
 
     public getSeat = (index: number): [number, number] => {
-        if (this.state.tokens.length <= index) {
-            this.state.tokens = new Array(index + 1).fill(1000);
-        }
-        const {length} = this.state.tokens;
-        const pos = index >= this.index ? (index - this.index) : (length - this.index + index);
-        console.log(this.index, index, pos, length);
+        const pos = index >= this.index ? (index - this.index) : (6 - this.index + index);
         return this.seats[pos];
     };
 
@@ -163,10 +158,9 @@ export class PokerGame {
                 card.draw(x, y, 80, 120);
             });
         }
-        const {length} = this.state.tokens;
         this.ctx.font = "30px Georgia";
         this.state.tokens.forEach((token, index) => {
-            const pos = index >= this.index ? (index - this.index) : (length - this.index + index);
+            const pos = index >= this.index ? (index - this.index) : (6 - this.index + index);
             const [x, y] = this.tokenPos[pos];
             this.ctx.fillStyle = "black";
             this.ctx.fillRect(x - 10, y - 30, 100, 50);
