@@ -167,11 +167,13 @@ export default class extends Component<PokerProps, StartedState> {
                 const cb = async () => {
                     try {
                         if (this.mounted) {
+                            this.game.getSeat(index);
                             if (shouldCall) {
                                 await this.callRemote(id);
                             }
                             if (index !== this.index) {
                                 const [x, y] = this.game.getSeat(index);
+                                console.log(id, x, y);
                                 this.setVideoPos(id, x, y);
                             }
                         } else {
