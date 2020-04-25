@@ -1,6 +1,13 @@
 import React, {Component} from 'react';
 import {UserList} from "@components/userList";
 import SocketIOClient from "socket.io-client";
+import Styled from "styled-components";
+
+
+const Video = Styled.div`
+    width: 800px;
+    height: 800px;
+`;
 
 interface State {
     conId: string,
@@ -120,7 +127,7 @@ export default class Index extends Component<{}, State> {
     render() {
         return (
             <>
-                <div id="firstVideo"/>
+                <Video id="firstVideo"/>
                 {this.state.conId ? <>
                         <UserList callRemote={this.callRemote} {...this.state}/>
                     </> :
