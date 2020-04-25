@@ -1,3 +1,5 @@
+const Lobby = require("./poker/lobby");
+
 class SocketWrapper {
     static connections = {};
     static currentId = 0;
@@ -6,6 +8,7 @@ class SocketWrapper {
     constructor(socket, id) {
         this.socket = socket;
         this.id = id;
+        this.lobby = new Lobby(socket, id);
         this.feedSocket();
     }
 

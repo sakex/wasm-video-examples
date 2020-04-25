@@ -1,4 +1,4 @@
-# wasm-video-examples
+cd # wasm-video-examples
 
 # Install
 
